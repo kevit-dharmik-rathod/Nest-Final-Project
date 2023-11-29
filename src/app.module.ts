@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
+import { ExceptionFilterModule } from './exceptionFilter/exception-filter.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -18,7 +19,7 @@ import { UserModule } from './user/user.module';
         };
       },
       inject: [ConfigService],
-    }),UserModule],
+    }),ExceptionFilterModule,UserModule,],
   controllers: [AppController],
   providers: [AppService],
 })

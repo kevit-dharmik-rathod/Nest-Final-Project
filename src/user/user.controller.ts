@@ -19,6 +19,11 @@ export class UserController {
     return user;
   }
 
+  @Post('/logout')
+  async userLogout() {
+    console.log('in controller ');
+    return await this.userService.logOut();
+  } 
   @Get()
   findAll() {
     return this.userService.findAll();
@@ -26,7 +31,7 @@ export class UserController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+    return this.userService.findOne(id);
   }
 
   @Patch(':id')
