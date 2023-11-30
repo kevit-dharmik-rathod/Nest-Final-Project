@@ -4,14 +4,12 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
+import { UseGuards } from '@nestjs/common';
+import { RolesGuard } from './guards/roles.guard';
+import { Roles } from './decorators/user.decorator';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService,private readonly authService: AuthService) {}
-
-  @Post('/add')
-  async create(@Body() body: CreateUserDto) {
-    return await this.authService.addUser(body);
-  }
 
   @Post('/login')
   async userLogin(@Body() credentials: LoginUserDto) {
@@ -19,9 +17,16 @@ export class UserController {
     return user;
   }
 
+  @Post('/add')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN', 'STAFF')
+  async create(@Body() body: CreateUserDto) {
+    return await this.authService.addUser(body);
+  }
+
+
   @Post('/logout')
   async userLogout() {
-    console.log('in controller ');
     return await this.userService.logOut();
   } 
   @Get()

@@ -18,8 +18,17 @@ export class AllExceptionsFilterService implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
+    let errorMessage: string | undefined;
+
+    if (exception instanceof HttpException) {
+      errorMessage = exception.message || 'Internal Server Error';
+    } else {
+      errorMessage = 'Internal Server Error';
+    }
+
     const responseBody = {
       statusCode: httpStatus,
+      message: errorMessage, // Include the custom message field
       timestamp: new Date().toISOString(),
       path: ctx.getRequest().url,
     };

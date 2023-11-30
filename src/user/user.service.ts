@@ -1,5 +1,5 @@
-import { Injectable, Logger, NotFoundException, Scope } from '@nestjs/common';
-import { BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException, Scope } from '@nestjs/common';
+import {  } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as mongoose from 'mongoose';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -8,23 +8,19 @@ import { InjectModel } from '@nestjs/mongoose';
 import { scrypt as _scrypt } from 'crypto';
 import { promisify } from 'util';
 import * as fs from 'fs';
-import { ObjectId } from 'mongodb';
 import { join } from 'path';
+import { UserObject } from '../interfaces/user-secret.interface';
 const jwt = require('jsonwebtoken');
 const scrypt = promisify(_scrypt);
 
-interface UserObject {
-  id: string;
-  role: string;
-  // Add other properties if needed
-}
-
-
-@Injectable({scope: Scope.REQUEST})
+@Injectable({scope:Scope.REQUEST})
 export class UserService {
   private userObj: object;
   setUserObj(userObj: object) {
     this.userObj = userObj;
+  }
+  getUserObj() {
+    return this.userObj;
   }
   private readonly logger = new Logger(UserService.name);
   constructor(@InjectModel(User.name) private userModel: mongoose.Model<User>) { }
@@ -54,17 +50,13 @@ export class UserService {
 
   async logOut(): Promise<String> {
    try { 
-    console.log(this.userObj);
     const { id, role } = this.userObj as UserObject;
-  // console.log(id);
   const user = await this.userModel.findById(id);
-  // this.logger.log(user);
   if (!user) {
     throw new BadRequestException("user not found");
   }
   user.authToken = undefined;
   await user.save();
-  // this.logger.log(user);
   return 'Successfully log out user';
 } catch (error) {
   console.error('Error in logOut:', error);
