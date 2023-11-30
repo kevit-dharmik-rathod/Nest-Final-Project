@@ -22,6 +22,8 @@ export class AllExceptionsFilterService implements ExceptionFilter {
 
     if (exception instanceof HttpException) {
       errorMessage = exception.message || 'Internal Server Error';
+    } else if (exception instanceof Error) {
+      errorMessage = exception.message || 'Internal Server Error';
     } else {
       errorMessage = 'Internal Server Error';
     }

@@ -1,7 +1,6 @@
 import { Injectable, Dependencies, ExecutionContext, Scope, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { UserService } from 'src/user/user.service';
-import { UserObject } from '../../interfaces/user-secret.interface';
 
 @Injectable()
 @Dependencies(Reflector)

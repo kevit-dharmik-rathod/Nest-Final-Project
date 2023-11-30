@@ -1,15 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { AuthService } from './auth.service';
+import { UpdateUserAdminDto } from './dto/update-useradmin.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UseGuards } from '@nestjs/common';
 import { RolesGuard } from './guards/roles.guard';
 import { Roles } from './decorators/user.decorator';
+import { UpdateOtherUserDto } from './dto/update-otheruser.dto';
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService,private readonly authService: AuthService) {}
+  constructor(private readonly userService: UserService) {}
 
   @Post('/login')
   async userLogin(@Body() credentials: LoginUserDto) {
@@ -19,33 +19,55 @@ export class UserController {
 
   @Post('/add')
   @UseGuards(RolesGuard)
-  @Roles('ADMIN', 'STAFF')
+  @Roles('ADMIN')
   async create(@Body() body: CreateUserDto) {
-    return await this.authService.addUser(body);
+    return await this.userService.create(body);
   }
 
+  @Get('/getAll')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  async getAll() {
+    return await this.userService.findAll();
+  }
 
   @Post('/logout')
   async userLogout() {
     return await this.userService.logOut();
   } 
+
   @Get()
   findAll() {
     return this.userService.findAll();
   }
 
-  @Get(':id')
+  @Get('/whoami')
+  getMyProfile() {
+    return this.userService.whoAmI();
+  }
+  @Patch('/updateOwn')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  async updateOwn(@Body() body:UpdateUserAdminDto) {
+    return await this.userService.updateOwnAdminProfile(body);
+  }
+
+  @Patch('/updateOthers/:id')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  async updateOthers(@Param('id') id: string, @Body() body: UpdateOtherUserDto) {
+    return await this.userService.updateOther(id,body);
+  }
+
+  @Get('/:id')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
+  @Delete('/delete/:id')
   remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+    return this.userService.remove(id);
   }
 }

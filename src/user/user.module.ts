@@ -3,7 +3,6 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User ,userSchema } from './Schemas/user.schema';
-import { AuthService } from './auth.service';
 import { AuthenticationMiddleware } from 'src/middlewares/authentication.middleware';
 import { RolesGuard } from './guards/roles.guard';
 
@@ -21,7 +20,7 @@ import { RolesGuard } from './guards/roles.guard';
     ]),
   ],
   controllers: [UserController],
-  providers: [UserService,AuthService,RolesGuard],
+  providers: [UserService,RolesGuard],
 })
 export class UserModule implements NestModule{
   configure(consumer: MiddlewareConsumer) {
