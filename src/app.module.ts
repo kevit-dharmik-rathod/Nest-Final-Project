@@ -3,8 +3,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserModule } from './user/user.module';
+import { UserModule } from  './modules/user/user.module';
 import { ExceptionFilterModule } from './exceptionFilter/exception-filter.module';
+import { DepartmentModule } from './modules/department/department.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -19,7 +20,7 @@ import { ExceptionFilterModule } from './exceptionFilter/exception-filter.module
         };
       },
       inject: [ConfigService],
-    }),ExceptionFilterModule,UserModule,],
+    }),ExceptionFilterModule,UserModule, DepartmentModule,],
   controllers: [AppController],
   providers: [AppService],
 })

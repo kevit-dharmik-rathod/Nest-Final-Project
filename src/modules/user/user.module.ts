@@ -18,9 +18,10 @@ import { RolesGuard } from './guards/roles.guard';
         },
       },
     ]),
-  ],
+  AuthenticationMiddleware],
   controllers: [UserController],
   providers: [UserService,RolesGuard],
+  exports: [UserService,AuthenticationMiddleware]
 })
 export class UserModule implements NestModule{
   configure(consumer: MiddlewareConsumer) {

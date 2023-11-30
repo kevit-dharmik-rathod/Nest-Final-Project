@@ -1,7 +1,7 @@
 
 import { ForbiddenException, Injectable, Logger, NestMiddleware, Scope } from "@nestjs/common";
 import { Request, Response, NextFunction } from 'express';
-import { UserService } from "src/user/user.service";
+import { UserService } from "../modules/user/user.service";
 import * as fs from "fs";
 import { join } from "path";
 const jwt = require('jsonwebtoken');

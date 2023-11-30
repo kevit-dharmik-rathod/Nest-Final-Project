@@ -8,7 +8,7 @@ import { scrypt as _scrypt, randomBytes } from 'crypto';
 import { promisify } from 'util';
 import * as fs from 'fs';
 import { join } from 'path';
-import { UserObject } from '../interfaces/user-secret.interface';
+import { UserObject } from '../../interfaces/user-secret.interface';
 import { UpdateUserAdminDto } from './dto/update-useradmin.dto';
 const jwt = require('jsonwebtoken');
 const scrypt = promisify(_scrypt);
