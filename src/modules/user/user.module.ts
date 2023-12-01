@@ -1,10 +1,10 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod, forwardRef } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User ,userSchema } from './Schemas/user.schema';
-import { AuthenticationMiddleware } from 'src/middlewares/authentication.middleware';
-import { RolesGuard } from './guards/roles.guard';
+import { User, userSchema } from './Schemas/user.schema';
+import { UserAuthenticationMiddleware } from '../../middlewares/user-authentication.middleware';
+import { RolesGuard } from '../../guards/roles.guard';
 
 @Module({
   imports: [
@@ -13,18 +13,18 @@ import { RolesGuard } from './guards/roles.guard';
         name: User.name,
         useFactory: () => {
           const schema = userSchema;
-          schema.pre('save', () => {});
+          schema.pre('save', () => { });
           return schema;
         },
       },
     ])],
   controllers: [UserController],
-  providers: [UserService,RolesGuard],
+  providers: [UserService, RolesGuard],
   exports: [UserService]
 })
-export class UserModule implements NestModule{
+export class UserModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthenticationMiddleware).exclude(
+    consumer.apply(UserAuthenticationMiddleware).exclude(
       { path: '/user/login', method: RequestMethod.POST }
     ).forRoutes(UserController);
   }

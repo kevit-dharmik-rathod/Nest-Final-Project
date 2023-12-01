@@ -1,6 +1,6 @@
 import { Injectable, Dependencies, ExecutionContext, Scope, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { UserService } from '../user.service';
+import { UserService } from '../modules/user/user.service';
 
 @Injectable()
 @Dependencies(Reflector)
@@ -16,7 +16,7 @@ export class RolesGuard {
             return true;
         }
         const request = context.switchToHttp().getRequest();
-        console.log("req['auth'] in guard" ,request['auth']['role']);
+        console.log("req['auth'] in guard", request['auth']['role']);
         return roles.includes(request['auth']['role']);
     }
 }

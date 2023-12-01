@@ -4,12 +4,12 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserAdminDto } from './dto/update-useradmin.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UseGuards } from '@nestjs/common';
-import { RolesGuard } from './guards/roles.guard';
+import { RolesGuard } from '../../guards/roles.guard';
 import { Roles } from './decorators/user.decorator';
 import { UpdateOtherUserDto } from './dto/update-otheruser.dto';
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Post('/login')
   async userLogin(@Body() credentials: LoginUserDto) {
@@ -34,7 +34,7 @@ export class UserController {
   @Post('/logout')
   async userLogout() {
     return await this.userService.logOut();
-  } 
+  }
 
   @Get()
   findAll() {
@@ -48,7 +48,7 @@ export class UserController {
   @Patch('/updateOwn')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
-  async updateOwn(@Body() body:UpdateUserAdminDto) {
+  async updateOwn(@Body() body: UpdateUserAdminDto) {
     return await this.userService.updateOwnAdminProfile(body);
   }
 
@@ -56,7 +56,7 @@ export class UserController {
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
   async updateOthers(@Param('id') id: string, @Body() body: UpdateOtherUserDto) {
-    return await this.userService.updateOther(id,body);
+    return await this.userService.updateOther(id, body);
   }
 
   @Get('/:id')

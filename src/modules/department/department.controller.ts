@@ -1,13 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { DepartmentService } from './department.service';
 import { CreateDepartmentDto } from './dto/create-department.dto';
-import { UpdateDepartmentDto } from './dto/update-department.dto';
-import { RolesGuard } from '../user/guards/roles.guard';
+import { RolesGuard } from '../../guards/roles.guard';
 import { UseGuards } from '@nestjs/common';
 import { Roles } from '../user/decorators/user.decorator';
 @Controller('department')
 export class DepartmentController {
-  constructor(private readonly departmentService: DepartmentService) {}
+  constructor(private readonly departmentService: DepartmentService) { }
 
   @Post('/add')
   @UseGuards(RolesGuard)

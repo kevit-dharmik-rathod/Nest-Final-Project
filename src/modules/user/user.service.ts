@@ -66,7 +66,7 @@ export class UserService {
 
   async create(user: CreateUserDto) {
     try {
-      const newUser = await this.userModel.create(user);
+    const newUser = await this.userModel.create(user);
     const tempPassword = newUser.password;
     const salt = randomBytes(8).toString('hex');
         const hash = (await scrypt(tempPassword, salt, 32)) as Buffer;

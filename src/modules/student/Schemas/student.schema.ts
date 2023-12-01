@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Types } from "mongoose";
 
 @Schema()
 export class Student {
@@ -12,16 +13,16 @@ export class Student {
     role: string;
 
     @Prop()
-    password: string;
-
-    @Prop()
-    designation: string;
-
-    @Prop()
     mobileNumber: number;
 
     @Prop()
-    department: string;
+    password: string;
+
+    @Prop()
+    department: Types.ObjectId;
+
+    @Prop()
+    sem: string;
 
     @Prop()
     authToken: string;
