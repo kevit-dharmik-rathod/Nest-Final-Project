@@ -6,7 +6,7 @@ import { AppService } from './app.service';
 import { UserModule } from  './modules/user/user.module';
 import { ExceptionFilterModule } from './exceptionFilter/exception-filter.module';
 import { DepartmentModule } from './modules/department/department.module';
-
+import { StudentModule } from './modules/student/student.module';
 @Module({
   imports: [ConfigModule.forRoot({
       envFilePath: '.env',
@@ -20,7 +20,7 @@ import { DepartmentModule } from './modules/department/department.module';
         };
       },
       inject: [ConfigService],
-    }),ExceptionFilterModule,UserModule, DepartmentModule,],
+    }),ExceptionFilterModule,UserModule, DepartmentModule, StudentModule],
   controllers: [AppController],
   providers: [AppService],
 })

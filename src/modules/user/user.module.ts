@@ -17,16 +17,15 @@ import { RolesGuard } from './guards/roles.guard';
           return schema;
         },
       },
-    ]),
-  AuthenticationMiddleware],
+    ])],
   controllers: [UserController],
   providers: [UserService,RolesGuard],
-  exports: [UserService,AuthenticationMiddleware]
+  exports: [UserService]
 })
 export class UserModule implements NestModule{
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(AuthenticationMiddleware).exclude(
-      { path: '/user/login', method: RequestMethod.POST },
+      { path: '/user/login', method: RequestMethod.POST }
     ).forRoutes(UserController);
   }
 }

@@ -1,26 +1,54 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable,NotFoundException } from '@nestjs/common';
 import { CreateDepartmentDto } from './dto/create-department.dto';
-import { UpdateDepartmentDto } from './dto/update-department.dto';
-
+import { Department } from './Schemas/dept.schema';
+import { InjectModel } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
 @Injectable()
 export class DepartmentService {
-  create(createDepartmentDto: CreateDepartmentDto) {
-    return 'This action adds a new department';
+  constructor(@InjectModel(Department.name) private deptModel: mongoose.Model<Department>){}
+  async create(createDepartmentDto: CreateDepartmentDto) {
+    try {
+      return await this.deptModel.create(createDepartmentDto);
+    }catch (error) {
+
+    }
   }
 
-  findAll() {
-    return `This action returns all department`;
+  async findAll() {
+    try {
+      return await this.deptModel.find({}); 
+    }catch (error) {
+      throw error;
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} department`;
+  async findOne(id: string) {
+    try {
+      return await this.deptModel.findById(id);
+    }catch(error) {
+
+    }
   }
 
-  update(id: number, updateDepartmentDto: UpdateDepartmentDto) {
-    return `This action updates a #${id} department`;
+  async update(id: string, attrs: Partial<Department>) {
+    try {
+      const department = await this.deptModel.findById(id);
+      if(!department) {
+        throw new NotFoundException('Department not found');
+      }
+      Object.assign(department,attrs);
+      await department.save();
+      return department;
+    } catch(error) {
+
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} department`;
+  async remove(id: string) {
+    try {
+      return await this.deptModel.findByIdAndDelete(id);
+    } catch(error) {
+      throw error;
+    }
   }
 }

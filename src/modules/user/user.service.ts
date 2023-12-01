@@ -38,7 +38,7 @@ export class UserService {
       if (storedHash !== hash.toString('hex')) {
         throw new BadRequestException('password is incorrect');
       }
-      const privatekey = fs.readFileSync(join(__dirname, '../../keys/Private.key'));
+      const privatekey = fs.readFileSync(join(__dirname, '../../../keys/Private.key'));
       const token = jwt.sign({ id: user.id.toString(), role: user.role }, privatekey, { algorithm: 'RS256' });
       user.authToken = token;
       await user.save();
@@ -65,7 +65,8 @@ export class UserService {
   }
 
   async create(user: CreateUserDto) {
-    const newUser = await this.userModel.create(user);
+    try {
+      const newUser = await this.userModel.create(user);
     const tempPassword = newUser.password;
     const salt = randomBytes(8).toString('hex');
         const hash = (await scrypt(tempPassword, salt, 32)) as Buffer;
@@ -73,6 +74,10 @@ export class UserService {
         newUser.password = result;
         await newUser.save();
         return newUser;
+    } catch (error) {
+      throw error;
+    }
+    
   }
 
   async findAll(): Promise<User[]> {
