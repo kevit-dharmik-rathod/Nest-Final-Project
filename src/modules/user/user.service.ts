@@ -50,7 +50,7 @@ export class UserService {
 
   async logOut(): Promise<String> {
     try {
-      const { id, role } = this.userObj as UserObject;
+      const { id } = this.userObj as UserObject;
       const user = await this.userModel.findById(id);
       if (!user) {
         throw new BadRequestException("user not found");
@@ -66,18 +66,18 @@ export class UserService {
 
   async create(user: CreateUserDto) {
     try {
-    const newUser = await this.userModel.create(user);
-    const tempPassword = newUser.password;
-    const salt = randomBytes(8).toString('hex');
-        const hash = (await scrypt(tempPassword, salt, 32)) as Buffer;
-        const result = salt + '.' + hash.toString('hex');
-        newUser.password = result;
-        await newUser.save();
-        return newUser;
+      const newUser = await this.userModel.create(user);
+      const tempPassword = newUser.password;
+      const salt = randomBytes(8).toString('hex');
+      const hash = (await scrypt(tempPassword, salt, 32)) as Buffer;
+      const result = salt + '.' + hash.toString('hex');
+      newUser.password = result;
+      await newUser.save();
+      return newUser;
     } catch (error) {
       throw error;
     }
-    
+
   }
 
   async findAll(): Promise<User[]> {
@@ -140,27 +140,27 @@ export class UserService {
 
   }
 
-  async updateOther(id:string, body:object): Promise<User> {
-    try{
+  async updateOther(id: string, body: object): Promise<User> {
+    try {
       const user = await this.userModel.findById(id);
-      if(!user) {
+      if (!user) {
         throw new BadRequestException('User not found');
       }
       const salt = randomBytes(8).toString('hex');
-        const hash = (await scrypt(body['password'], salt, 32)) as Buffer;
-        const result = salt + '.' + hash.toString('hex');
-        user.password = result;
-        await user.save();
-        return user;
-    } catch(err){
+      const hash = (await scrypt(body['password'], salt, 32)) as Buffer;
+      const result = salt + '.' + hash.toString('hex');
+      user.password = result;
+      await user.save();
+      return user;
+    } catch (err) {
       throw err;
     }
   }
 
   remove(id: string) {
-    try{
+    try {
       return this.userModel.findByIdAndDelete(id);
-    }catch(err){
+    } catch (err) {
       throw err;
     }
   }

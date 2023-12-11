@@ -1,6 +1,5 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateStudentDto } from './dto/create-student.dto';
-import { UpdateStudentDto } from './dto/update-student.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import * as fs from 'fs';
 import { Student } from './Schemas/student.schema';
@@ -10,10 +9,12 @@ import { promisify } from 'util';
 import { DepartmentService } from '../department/department.service';
 import { join } from 'path';
 import { StudentObject } from 'src/interfaces/student-secret.interface';
+import { UpdateStudentOtherFields } from './dto/update-student-fields.dto';
 const jwt = require('jsonwebtoken');
 const scrypt = promisify(_scrypt);
 @Injectable()
 export class StudentService {
+  private readonly logger = new Logger(StudentService.name);
   private studentObj: object;
   setStudentObj(studentObj: object) {
     this.studentObj = studentObj;
@@ -39,6 +40,21 @@ export class StudentService {
       student.authToken = token;
       await student.save();
       return student;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async logout(): Promise<String> {
+    try {
+      const { id } = this.studentObj as StudentObject;
+      const student = await this.studentModel.findById(id);
+      if (!student) {
+        throw new BadRequestException('Student not found');
+      }
+      student.authToken = undefined;
+      await student.save();
+      return 'Student logout successfully';
     } catch (error) {
       throw error;
     }
@@ -75,6 +91,30 @@ export class StudentService {
     }
   }
 
+  async showMyProfile() {
+    try {
+      const { id } = this.studentObj as StudentObject;
+      return await this.studentModel.findById(id);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateMyPassword(body: object): Promise<String> {
+    try {
+      const { id } = this.studentObj as StudentObject;
+      const student = await this.studentModel.findById(id);
+      if (!student) {
+        throw new NotFoundException("Student does not exist");
+      }
+      const salt = randomBytes(8).toString('hex');
+      const hash = (await scrypt(body['password'], salt, 32)) as Buffer;
+      const result = salt + '.' + hash.toString('hex');
+      student.password = result;
+      await student.save();
+      return 'Password updated successfully';
+    } catch (error) { }
+  }
   async findOne(id: string) {
     try {
       return await this.studentModel.findById(id);
@@ -83,11 +123,41 @@ export class StudentService {
     }
   }
 
-  update(id: number, updateStudentDto: UpdateStudentDto) {
-    return `This action updates a #${id} student`;
-  }
+  async update(id: string, body: UpdateStudentOtherFields): Promise<String> {
+    const student = await this.studentModel.findById(id);
+    const { department: studentExistingDepartment } = student;
+    const { department: studentNewDepartment } = body;
+    const newDepartment = await this.deptService.findOne(studentNewDepartment);
+    if (!newDepartment) {
+      throw new NotFoundException("Provided new department does not exist");
+    }
+    if (!student) {
+      throw new NotFoundException("Student does not exist");
+    }
+    Object.assign(student, body.name, body.email, body.mobileNumber, body.sem);
+    const exist_dep = await this.deptService.findOne(studentExistingDepartment);
+    if (body.hasOwnProperty('department')) {
+      if (newDepartment.occupiedSeats >= newDepartment.availableSeats) {
+        throw new BadRequestException('No vacancies in provided department');
+      } else {
+        exist_dep.occupiedSeats -= 1;
+        await exist_dep.save();
+        newDepartment.occupiedSeats += 1;
+        await newDepartment.save();
+        student.department = body.department;
+        await student.save();
+      }
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} student`;
+    return 'department updated successfully';
+  }
+  async remove(id: string): Promise<String> {
+    const student = await this.studentModel.findById(id);
+    const { department: studentExistingDepartment } = student;
+    const department = await this.deptService.findOne(studentExistingDepartment);
+    department.occupiedSeats -= 1;
+    await department.save();
+    await this.studentModel.findByIdAndDelete(id);
+    return "student deleted successfully";
   }
 }

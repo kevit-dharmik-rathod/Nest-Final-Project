@@ -22,8 +22,4 @@ import { RolesGuard } from '../../guards/roles.guard';
   providers: [DepartmentService, RolesGuard],
   exports: [DepartmentService]
 })
-export class DepartmentModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(UserAuthenticationMiddleware).forRoutes(DepartmentController);
-  }
-}
+export class DepartmentModule { }

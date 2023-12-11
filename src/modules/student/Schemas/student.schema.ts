@@ -6,10 +6,10 @@ export class Student {
     @Prop()
     name: string;
 
-    @Prop({unique: true})
+    @Prop({ unique: true })
     email: string;
 
-    @Prop({default:"STUDENT"})
+    @Prop({ default: "STUDENT" })
     role: string;
 
     @Prop()
@@ -19,7 +19,7 @@ export class Student {
     password: string;
 
     @Prop()
-    department: Types.ObjectId;
+    department: string;
 
     @Prop()
     sem: string;

@@ -22,10 +22,4 @@ import { RolesGuard } from '../../guards/roles.guard';
   providers: [UserService, RolesGuard],
   exports: [UserService]
 })
-export class UserModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(UserAuthenticationMiddleware).exclude(
-      { path: '/user/login', method: RequestMethod.POST }
-    ).forRoutes(UserController);
-  }
-}
+export class UserModule { }
