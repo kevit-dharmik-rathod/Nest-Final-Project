@@ -1,6 +1,5 @@
-
-import { IsString } from "class-validator";
+import { IsString } from 'class-validator';
 export class UpdateOtherUserDto {
-    @IsString()
-    password: string;
+  @IsString()
+  password: string;
 }

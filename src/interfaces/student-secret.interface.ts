@@ -1,4 +1,4 @@
 export interface StudentObject {
-    id: string;
-    role: string;
+  id: string;
+  role: string;
 }

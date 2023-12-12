@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserAdminDto } from './dto/update-useradmin.dto';
@@ -9,11 +18,14 @@ import { Roles } from './decorators/user.decorator';
 import { UpdateOtherUserDto } from './dto/update-otheruser.dto';
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   @Post('/login')
   async userLogin(@Body() credentials: LoginUserDto) {
-    const user = await this.userService.loginUser(credentials.email, credentials.password);
+    const user = await this.userService.loginUser(
+      credentials.email,
+      credentials.password,
+    );
     return user;
   }
 
@@ -57,7 +69,10 @@ export class UserController {
   @Patch('/updateOthers/:id')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
-  async updateOthers(@Param('id') id: string, @Body() body: UpdateOtherUserDto) {
+  async updateOthers(
+    @Param('id') id: string,
+    @Body() body: UpdateOtherUserDto,
+  ) {
     return await this.userService.updateOther(id, body);
   }
 

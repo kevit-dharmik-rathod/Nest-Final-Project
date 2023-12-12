@@ -1,17 +1,17 @@
-import { IsString, IsNumber } from "class-validator";
+import { IsString, IsNumber } from 'class-validator';
 export class CreateDepartmentDto {
-    @IsString()
-    name: string;
+  @IsString()
+  name: string;
 
-    @IsString()
-    initial: string;
+  @IsString()
+  initial: string;
 
-    @IsNumber()
-    availableSeats: number;
+  @IsNumber()
+  availableSeats: number;
 
-    @IsNumber()
-    occupiedSeats: number;
-    
-    @IsNumber()
-    batch: number;
+  @IsNumber()
+  occupiedSeats: number;
+
+  @IsNumber()
+  batch: number;
 }

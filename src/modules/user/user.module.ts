@@ -1,4 +1,10 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod, forwardRef } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+  forwardRef,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -10,11 +16,12 @@ import { RolesGuard } from '../../guards/roles.guard';
     MongooseModule.forFeature([
       {
         name: User.name,
-        schema: userSchema
+        schema: userSchema,
       },
-    ])],
+    ]),
+  ],
   controllers: [UserController],
   providers: [UserService, RolesGuard],
-  exports: [UserService]
+  exports: [UserService],
 })
-export class UserModule { }
+export class UserModule {}

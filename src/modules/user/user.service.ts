@@ -1,5 +1,11 @@
-import { Injectable, Logger, NotFoundException, BadRequestException, Scope } from '@nestjs/common';
-import { } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+  Scope,
+} from '@nestjs/common';
+import {} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as mongoose from 'mongoose';
 import { User } from './Schemas/user.schema';
@@ -23,7 +29,9 @@ export class UserService {
     return this.userObj;
   }
   private readonly logger = new Logger(UserService.name);
-  constructor(@InjectModel(User.name) private userModel: mongoose.Model<User>) { }
+  constructor(
+    @InjectModel(User.name) private userModel: mongoose.Model<User>,
+  ) {}
   async loginUser(email: string, password: string) {
     try {
       if (!email || !password) {
@@ -38,8 +46,14 @@ export class UserService {
       if (storedHash !== hash.toString('hex')) {
         throw new BadRequestException('password is incorrect');
       }
-      const privatekey = fs.readFileSync(join(__dirname, '../../../keys/Private.key'));
-      const token = jwt.sign({ id: user.id.toString(), role: user.role }, privatekey, { algorithm: 'RS256' });
+      const privatekey = fs.readFileSync(
+        join(__dirname, '../../../keys/Private.key'),
+      );
+      const token = jwt.sign(
+        { id: user.id.toString(), role: user.role },
+        privatekey,
+        { algorithm: 'RS256' },
+      );
       user.authToken = token;
       await user.save();
       return user;
@@ -53,7 +67,7 @@ export class UserService {
       const { id } = this.userObj as UserObject;
       const user = await this.userModel.findById(id);
       if (!user) {
-        throw new BadRequestException("user not found");
+        throw new BadRequestException('user not found');
       }
       user.authToken = undefined;
       await user.save();
@@ -61,7 +75,6 @@ export class UserService {
     } catch (error) {
       throw error;
     }
-
   }
 
   async create(user: CreateUserDto) {
@@ -77,7 +90,6 @@ export class UserService {
     } catch (error) {
       throw error;
     }
-
   }
 
   async findAll(): Promise<User[]> {
@@ -115,7 +127,6 @@ export class UserService {
     } catch (err) {
       throw err;
     }
-
   }
 
   async updateOwnAdminProfile(updateUser: UpdateUserAdminDto) {
@@ -137,7 +148,6 @@ export class UserService {
     } catch (err) {
       throw err;
     }
-
   }
 
   async updateOther(id: string, body: object): Promise<User> {
@@ -164,5 +174,4 @@ export class UserService {
       throw err;
     }
   }
-
 }

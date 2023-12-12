@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Logger,
+} from '@nestjs/common';
 import { StudentService } from './student.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { RolesGuard } from '../../guards/roles.guard';
@@ -10,7 +20,7 @@ import { UpdateStudentOtherFields } from './dto/update-student-fields.dto';
 @Controller('student')
 export class StudentController {
   private readonly logger = new Logger(StudentController.name);
-  constructor(private readonly studentService: StudentService) { }
+  constructor(private readonly studentService: StudentService) {}
 
   @Post('/login')
   studentLogin(@Body() credentials: LoginStudentDto) {
