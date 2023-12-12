@@ -9,11 +9,22 @@ export class RolesGuard {
     constructor(private reflector: Reflector, private userService: UserService) { }
 
     canActivate(context: ExecutionContext): Boolean {
-        const roles = this.reflector.get<string[]>('roles', context.getHandler());
+        try {
+            const roles = this.reflector.get<string[]>('roles', context.getHandler());
+        console.log(roles);
         if (!roles) {
+            console.log("enter in to if condition");
             return true;
         }
         const request = context.switchToHttp().getRequest();
+        console.log(request['auth']['role']);
+        const result = roles.includes(request['auth']['role'])
+        console.log(result );
         return roles.includes(request['auth']['role']);
+        } catch(error) {
+            console.log(`error thrown from the guard: ${error}`);
+            throw error;
+        }
+        
     }
 }

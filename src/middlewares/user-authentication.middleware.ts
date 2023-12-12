@@ -34,6 +34,7 @@ export class UserAuthenticationMiddleware implements NestMiddleware {
             }
             next();
         } catch (err) {
+            this.logger.error(`error comes from the authentication middleware: ${err}`);
             next(err);
         }
     }

@@ -1,16 +1,28 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  forwardRef,
+} from '@nestjs/common';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { Department } from './Schemas/dept.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
+import { StudentService } from '../student/student.service';
 @Injectable()
 export class DepartmentService {
-  constructor(@InjectModel(Department.name) private deptModel: mongoose.Model<Department>) { }
+  private readonly logger = new Logger(DepartmentService.name);
+  constructor(
+    @InjectModel(Department.name) private deptModel: mongoose.Model<Department>,
+    @Inject(forwardRef(() => StudentService))
+    private studentService: StudentService,
+  ) {}
   async create(createDepartmentDto: CreateDepartmentDto) {
     try {
       return await this.deptModel.create(createDepartmentDto);
     } catch (error) {
-
+      throw error;
     }
   }
 
@@ -39,15 +51,200 @@ export class DepartmentService {
       Object.assign(department, attrs);
       await department.save();
       return department;
-    } catch (error) {
+    } catch (error) {}
+  }
 
+  async remove(id: string): Promise<String> {
+    try {
+      await this.studentService.deleteStudents(id);
+      await this.deptModel.findByIdAndDelete(id);
+      return 'Department deleted successfully';
+    } catch (error) {
+      throw error;
     }
   }
 
-  async remove(id: string) {
+  async task1() {
     try {
-      return await this.deptModel.findByIdAndDelete(id);
+      const pipeLine: any = [
+        {
+          $group:
+            /**
+             * _id: The id of the group.
+             * fieldN: The first field name.
+             */
+            {
+              _id: '$batch',
+              totalStudents: {
+                $sum: '$occupiedSeats',
+              },
+              branches: {
+                $push: {
+                  initial: '$initial',
+                  occupiedSeats: '$occupiedSeats',
+                },
+              },
+            },
+        },
+        {
+          $project:
+            /**
+             * specifications: The fields to
+             *   include or exclude.
+             */
+            {
+              department: {
+                $map: {
+                  input: '$branches',
+                  as: 'tempData',
+                  in: {
+                    k: '$$tempData.initial',
+                    v: '$$tempData.occupiedSeats',
+                  },
+                },
+              },
+              totalStudents: 1,
+            },
+        },
+        {
+          $project:
+            /**
+             * specifications: The fields to
+             *   include or exclude.
+             */
+            {
+              _id: 0,
+              year: '$_id',
+              branches: {
+                $arrayToObject: '$department',
+              },
+              totalStudents: 1,
+            },
+        },
+      ];
+      return await this.deptModel.aggregate(pipeLine);
     } catch (error) {
+      this.logger.error(`Error in services while task1 performed : ${error}`);
+      throw error;
+    }
+  }
+
+  async task2(body: object) {
+    try {
+      const pipeLine: any = [
+        {
+          $lookup:
+            /**
+             * from: The target collection.
+             * localField: The local join field.
+             * foreignField: The target join field.
+             * as: The name for the results.
+             * pipeline: Optional pipeline to run on the foreign collection.
+             * let: Optional variables to use in the pipeline field stages.
+             */
+            {
+              from: 'students',
+              localField: '_id',
+              foreignField: 'department',
+              as: 'studentDetails',
+            },
+        },
+        {
+          $unwind:
+            /**
+             * path: Path to the array field.
+             * includeArrayIndex: Optional name for index.
+             * preserveNullAndEmptyArrays: Optional
+             *   toggle to unwind null and empty values.
+             */
+            {
+              path: '$studentDetails',
+            },
+        },
+        {
+          $lookup:
+            /**
+             * from: The target collection.
+             * localField: The local join field.
+             * foreignField: The target join field.
+             * as: The name for the results.
+             * pipeline: Optional pipeline to run on the foreign collection.
+             * let: Optional variables to use in the pipeline field stages.
+             */
+            {
+              from: 'attendances',
+              localField: 'studentDetails._id',
+              foreignField: 'studentId',
+              as: 'attendance',
+            },
+        },
+        {
+          $unwind:
+            /**
+             * path: Path to the array field.
+             * includeArrayIndex: Optional name for index.
+             * preserveNullAndEmptyArrays: Optional
+             *   toggle to unwind null and empty values.
+             */
+            {
+              path: '$attendance',
+            },
+        },
+        {
+          $project:
+            /**
+             * specifications: The fields to
+             *   include or exclude.
+             */
+            {
+              _id: 0,
+              name: '$studentDetails.name',
+              email: '$studentDetails.email',
+              mobileNo: '$studentDetails.mobile',
+              branch: '$name',
+              sem: '$studentDetails.sem',
+              batch: 1,
+              date: '$attendance.date',
+              present: '$attendance.isPresent',
+            },
+        },
+        {
+          $match:
+            /**
+             * query: The query in MQL.
+             */
+            {
+              date: body['date'],
+              present: false,
+            },
+        },
+      ];
+      if (body.hasOwnProperty('batch')) {
+        pipeLine.push({
+          $match: {
+            batch: body['batch'],
+          },
+        });
+      }
+      if (body.hasOwnProperty('branch')) {
+        pipeLine.push({
+          $match: {
+            branch: body['branch'],
+          },
+        });
+      }
+      if (body.hasOwnProperty('sem')) {
+        pipeLine.push({
+          $match: {
+            branch: body['sem'],
+          },
+        });
+      }
+      return await this.deptModel.aggregate(pipeLine);
+    } catch (error) {
+      this.logger.error(
+        `Error in services while getting absent students: ${error}`,
+      );
       throw error;
     }
   }

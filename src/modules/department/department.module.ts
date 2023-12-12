@@ -1,23 +1,18 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import {  Module,  forwardRef } from '@nestjs/common';
 import { DepartmentService } from './department.service';
 import { DepartmentController } from './department.controller';
-import { UserAuthenticationMiddleware } from '../../middlewares/user-authentication.middleware';
-import { UserModule } from '../user/user.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Department, departmentSchema } from './Schemas/dept.schema';
 import { RolesGuard } from '../../guards/roles.guard';
+import { StudentModule } from '../student/student.module';
 
 @Module({
-  imports: [MongooseModule.forFeatureAsync([
+  imports: [MongooseModule.forFeature([
     {
       name: Department.name,
-      useFactory: () => {
-        const schema = departmentSchema;
-        schema.pre('save', () => { });
-        return schema;
-      },
+      schema: departmentSchema
     },
-  ]), UserModule],
+  ]),forwardRef(()=> StudentModule)],
   controllers: [DepartmentController],
   providers: [DepartmentService, RolesGuard],
   exports: [DepartmentService]

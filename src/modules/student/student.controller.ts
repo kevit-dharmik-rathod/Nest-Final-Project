@@ -28,7 +28,6 @@ export class StudentController {
   @UseGuards(RolesGuard)
   @Roles('ADMIN', 'STAFF')
   async findAll() {
-    this.logger.warn('Enter in to find all students controller');
     return await this.studentService.findAll();
   }
 

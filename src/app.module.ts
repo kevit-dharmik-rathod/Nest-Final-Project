@@ -11,6 +11,8 @@ import { UserAuthenticationMiddleware } from './middlewares/user-authentication.
 import { UserController } from './modules/user/user.controller';
 import { DepartmentController } from './modules/department/department.controller';
 import { StudentController } from './modules/student/student.controller';
+import { AttendanceModule } from './modules/attendance/attendance.module';
+import { AttendanceController } from './modules/attendance/attendance.controller';
 @Module({
   imports: [ConfigModule.forRoot({
     envFilePath: '.env',
@@ -24,7 +26,7 @@ import { StudentController } from './modules/student/student.controller';
       };
     },
     inject: [ConfigService],
-  }), ExceptionFilterModule, UserModule, DepartmentModule, StudentModule],
+  }), ExceptionFilterModule, UserModule, DepartmentModule, StudentModule, AttendanceModule],
   controllers: [AppController],
   providers: [AppService],
 })
@@ -33,6 +35,6 @@ export class AppModule implements NestModule {
     consumer.apply(UserAuthenticationMiddleware).exclude(
       { path: '/user/login', method: RequestMethod.POST },
       { path: '/student/login', method: RequestMethod.POST }
-    ).forRoutes(UserController, DepartmentController, StudentController);
+    ).forRoutes(UserController, DepartmentController, StudentController,AttendanceController);
   }
 }
