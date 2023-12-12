@@ -1,8 +1,9 @@
 import { IsBoolean, IsDate, IsString } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class CreateAttendanceDto {
   @IsString()
-  studentId: string;
+  studentId: Types.ObjectId;
 
   @IsDate()
   date: string;

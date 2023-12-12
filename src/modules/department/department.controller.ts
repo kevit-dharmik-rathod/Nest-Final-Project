@@ -32,6 +32,21 @@ export class DepartmentController {
     return await this.departmentService.task2(body);
   }
 
+  //Query3 for getting list of student which attendance is less than 75% up to date which we give as a input.
+  @Post('/query3')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN', 'STAFF')
+  async query3(@Body() body: object) {
+    return await this.departmentService.task3(body);
+  }
+  //Query4 getting vacant seats year wise
+  @Post('/query4')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  async query4(@Body() body: object) {
+    return await this.departmentService.task4(body);
+  }
+
   @Post('/add')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')

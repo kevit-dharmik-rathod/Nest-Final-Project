@@ -10,7 +10,7 @@ import { CreateStudentDto } from './dto/create-student.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import * as fs from 'fs';
 import { Student } from './Schemas/student.schema';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { scrypt as _scrypt, randomBytes } from 'crypto';
 import { promisify } from 'util';
 import { DepartmentService } from '../department/department.service';
@@ -82,7 +82,7 @@ export class StudentService {
   async create(createStudentDto: CreateStudentDto) {
     try {
       const department = await this.deptService.findOne(
-        createStudentDto.department,
+        createStudentDto.department.toString(),
       );
       if (!department) {
         throw new BadRequestException('Department not found');
@@ -92,6 +92,9 @@ export class StudentService {
       }
       department.occupiedSeats += 1;
       await department.save();
+      createStudentDto.department = new Types.ObjectId(
+        createStudentDto.department,
+      );
       const newStudent = await this.studentModel.create(createStudentDto);
       const tempPassword = newStudent.password;
       const salt = randomBytes(8).toString('hex');
@@ -157,7 +160,9 @@ export class StudentService {
       throw new NotFoundException('Student does not exist');
     }
     Object.assign(student, body.name, body.email, body.mobileNumber, body.sem);
-    const exist_dep = await this.deptService.findOne(studentExistingDepartment);
+    const exist_dep = await this.deptService.findOne(
+      studentExistingDepartment.toString(),
+    );
     if (body.hasOwnProperty('department')) {
       if (newDepartment.occupiedSeats >= newDepartment.availableSeats) {
         throw new BadRequestException('No vacancies in provided department');
@@ -166,7 +171,7 @@ export class StudentService {
         await exist_dep.save();
         newDepartment.occupiedSeats += 1;
         await newDepartment.save();
-        student.department = body.department;
+        Object.assign(student, newDepartment);
         await student.save();
       }
     }
@@ -177,7 +182,7 @@ export class StudentService {
     const student = await this.studentModel.findById(id);
     const { department: studentExistingDepartment } = student;
     const department = await this.deptService.findOne(
-      studentExistingDepartment,
+      studentExistingDepartment.toString(),
     );
     department.occupiedSeats -= 1;
     await department.save();
@@ -186,6 +191,12 @@ export class StudentService {
     return 'student deleted successfully';
   }
   async deleteStudents(deptId: string) {
-    return await this.studentModel.deleteMany({ department: deptId });
+    const newId = new Types.ObjectId(deptId);
+    const allStudents = await this.studentModel.find({ department: newId });
+    for (const student of allStudents) {
+      console.log(student._id);
+      await this.attendanceService.deleteManyAttendance(student._id.toString());
+    }
+    return await this.studentModel.deleteMany({ department: newId });
   }
 }

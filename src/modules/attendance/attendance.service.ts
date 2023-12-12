@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Attendance } from './Schemas/attendance.schema';
-import mongoose from 'mongoose';
+import mongoose, { ObjectId, Types } from 'mongoose';
 import { StudentService } from '../student/student.service';
 import { CreateAttendanceDto } from './dtos/create-attendance.dto';
 
@@ -22,10 +22,14 @@ export class AttendanceService {
   ) {}
   async create(body: CreateAttendanceDto) {
     try {
-      const student = await this.studentService.findOne(body.studentId);
+      const student = await this.studentService.findOne(
+        body.studentId.toString(),
+      );
       if (!student) {
         throw new NotFoundException('Student not found with given studentId');
       }
+      body.studentId = new Types.ObjectId(body.studentId);
+      console.log(body.studentId);
       return await this.attendanceModel.create(body);
     } catch (error) {
       throw error;
@@ -48,7 +52,9 @@ export class AttendanceService {
 
   async deleteManyAttendance(studentId: string) {
     try {
-      return await this.attendanceModel.deleteMany({ studentId });
+      console.log(`studentId in deleteManyAttendance ${studentId}`);
+      const newId = new Types.ObjectId(studentId);
+      return await this.attendanceModel.deleteMany({ studentId: newId });
     } catch (error) {}
   }
 }
