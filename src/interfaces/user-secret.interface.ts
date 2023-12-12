@@ -1,4 +1,4 @@
 export interface UserObject {
-    id: string;
-    role: string;
+  id: string;
+  role: string;
 }

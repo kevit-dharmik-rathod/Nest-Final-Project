@@ -1,10 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserAdminDto } from './dto/update-useradmin.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UseGuards } from '@nestjs/common';
-import { RolesGuard } from './guards/roles.guard';
+import { RolesGuard } from '../../guards/roles.guard';
 import { Roles } from './decorators/user.decorator';
 import { UpdateOtherUserDto } from './dto/update-otheruser.dto';
 @Controller('user')
@@ -13,7 +22,10 @@ export class UserController {
 
   @Post('/login')
   async userLogin(@Body() credentials: LoginUserDto) {
-    const user = await this.userService.loginUser(credentials.email, credentials.password);
+    const user = await this.userService.loginUser(
+      credentials.email,
+      credentials.password,
+    );
     return user;
   }
 
@@ -34,9 +46,11 @@ export class UserController {
   @Post('/logout')
   async userLogout() {
     return await this.userService.logOut();
-  } 
+  }
 
   @Get()
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
   findAll() {
     return this.userService.findAll();
   }
@@ -48,15 +62,18 @@ export class UserController {
   @Patch('/updateOwn')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
-  async updateOwn(@Body() body:UpdateUserAdminDto) {
+  async updateOwn(@Body() body: UpdateUserAdminDto) {
     return await this.userService.updateOwnAdminProfile(body);
   }
 
   @Patch('/updateOthers/:id')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
-  async updateOthers(@Param('id') id: string, @Body() body: UpdateOtherUserDto) {
-    return await this.userService.updateOther(id,body);
+  async updateOthers(
+    @Param('id') id: string,
+    @Body() body: UpdateOtherUserDto,
+  ) {
+    return await this.userService.updateOther(id, body);
   }
 
   @Get('/:id')

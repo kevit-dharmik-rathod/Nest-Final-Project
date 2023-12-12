@@ -1,5 +1,11 @@
-import { Injectable, Logger, NotFoundException, BadRequestException, Scope } from '@nestjs/common';
-import { } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+  Scope,
+} from '@nestjs/common';
+import {} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as mongoose from 'mongoose';
 import { User } from './Schemas/user.schema';
@@ -8,7 +14,7 @@ import { scrypt as _scrypt, randomBytes } from 'crypto';
 import { promisify } from 'util';
 import * as fs from 'fs';
 import { join } from 'path';
-import { UserObject } from '../interfaces/user-secret.interface';
+import { UserObject } from '../../interfaces/user-secret.interface';
 import { UpdateUserAdminDto } from './dto/update-useradmin.dto';
 const jwt = require('jsonwebtoken');
 const scrypt = promisify(_scrypt);
@@ -23,7 +29,9 @@ export class UserService {
     return this.userObj;
   }
   private readonly logger = new Logger(UserService.name);
-  constructor(@InjectModel(User.name) private userModel: mongoose.Model<User>) { }
+  constructor(
+    @InjectModel(User.name) private userModel: mongoose.Model<User>,
+  ) {}
   async loginUser(email: string, password: string) {
     try {
       if (!email || !password) {
@@ -38,8 +46,14 @@ export class UserService {
       if (storedHash !== hash.toString('hex')) {
         throw new BadRequestException('password is incorrect');
       }
-      const privatekey = fs.readFileSync(join(__dirname, '../../keys/Private.key'));
-      const token = jwt.sign({ id: user.id.toString(), role: user.role }, privatekey, { algorithm: 'RS256' });
+      const privatekey = fs.readFileSync(
+        join(__dirname, '../../../keys/Private.key'),
+      );
+      const token = jwt.sign(
+        { id: user.id.toString(), role: user.role },
+        privatekey,
+        { algorithm: 'RS256' },
+      );
       user.authToken = token;
       await user.save();
       return user;
@@ -50,10 +64,10 @@ export class UserService {
 
   async logOut(): Promise<String> {
     try {
-      const { id, role } = this.userObj as UserObject;
+      const { id } = this.userObj as UserObject;
       const user = await this.userModel.findById(id);
       if (!user) {
-        throw new BadRequestException("user not found");
+        throw new BadRequestException('user not found');
       }
       user.authToken = undefined;
       await user.save();
@@ -61,18 +75,21 @@ export class UserService {
     } catch (error) {
       throw error;
     }
-
   }
 
   async create(user: CreateUserDto) {
-    const newUser = await this.userModel.create(user);
-    const tempPassword = newUser.password;
-    const salt = randomBytes(8).toString('hex');
-        const hash = (await scrypt(tempPassword, salt, 32)) as Buffer;
-        const result = salt + '.' + hash.toString('hex');
-        newUser.password = result;
-        await newUser.save();
-        return newUser;
+    try {
+      const newUser = await this.userModel.create(user);
+      const tempPassword = newUser.password;
+      const salt = randomBytes(8).toString('hex');
+      const hash = (await scrypt(tempPassword, salt, 32)) as Buffer;
+      const result = salt + '.' + hash.toString('hex');
+      newUser.password = result;
+      await newUser.save();
+      return newUser;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findAll(): Promise<User[]> {
@@ -110,7 +127,6 @@ export class UserService {
     } catch (err) {
       throw err;
     }
-
   }
 
   async updateOwnAdminProfile(updateUser: UpdateUserAdminDto) {
@@ -132,32 +148,30 @@ export class UserService {
     } catch (err) {
       throw err;
     }
-
   }
 
-  async updateOther(id:string, body:object): Promise<User> {
-    try{
+  async updateOther(id: string, body: object): Promise<User> {
+    try {
       const user = await this.userModel.findById(id);
-      if(!user) {
+      if (!user) {
         throw new BadRequestException('User not found');
       }
       const salt = randomBytes(8).toString('hex');
-        const hash = (await scrypt(body['password'], salt, 32)) as Buffer;
-        const result = salt + '.' + hash.toString('hex');
-        user.password = result;
-        await user.save();
-        return user;
-    } catch(err){
+      const hash = (await scrypt(body['password'], salt, 32)) as Buffer;
+      const result = salt + '.' + hash.toString('hex');
+      user.password = result;
+      await user.save();
+      return user;
+    } catch (err) {
       throw err;
     }
   }
 
   remove(id: string) {
-    try{
+    try {
       return this.userModel.findByIdAndDelete(id);
-    }catch(err){
+    } catch (err) {
       throw err;
     }
   }
-
 }
