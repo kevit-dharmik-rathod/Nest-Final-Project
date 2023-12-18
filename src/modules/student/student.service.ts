@@ -15,7 +15,7 @@ import { scrypt as _scrypt, randomBytes } from 'crypto';
 import { promisify } from 'util';
 import { DepartmentService } from '../department/department.service';
 import { join } from 'path';
-import { StudentObject } from 'src/interfaces/student-secret.interface';
+import { StudentObject } from '../../interfaces/student-secret.interface';
 import { UpdateStudentOtherFields } from './dto/update-student-fields.dto';
 import { AttendanceService } from '../attendance/attendance.service';
 const jwt = require('jsonwebtoken');

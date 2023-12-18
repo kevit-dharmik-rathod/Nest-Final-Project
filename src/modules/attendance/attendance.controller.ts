@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { Roles } from '../user/decorators/user.decorator';
-import { RolesGuard } from 'src/guards/roles.guard';
+import { RolesGuard } from '../../guards/roles.guard';
 import { CreateAttendanceDto } from './dtos/create-attendance.dto';
 
 @Controller('attendance')
