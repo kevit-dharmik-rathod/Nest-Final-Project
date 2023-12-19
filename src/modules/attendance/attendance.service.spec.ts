@@ -57,8 +57,6 @@ describe('AttendanceService', () => {
 
       expect(findOneSpy).toHaveBeenCalledWith(createAttendanceDto.studentId);
       expect(findOneSpy).toHaveBeenCalledTimes(1);
-
-      // Add more assertions based on your specific implementation
     });
 
     it('should throw NotFoundException when student is not found', async () => {
@@ -96,8 +94,6 @@ describe('AttendanceService', () => {
 
     it('should return null if attendance is not found by id', async () => {
       const nonExistingAttendanceId = 'non-existing-attendance-id';
-
-      // Mock findById to return null
       jest
         .spyOn(service['attendanceModel'], 'findById')
         .mockResolvedValueOnce(null);

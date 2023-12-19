@@ -42,8 +42,6 @@ describe('AttendanceController', () => {
         createAttendanceDto,
       );
       expect(result).toEqual();
-
-      // Add more assertions based on your specific implementation
     });
 
     it('should throw NotFoundException when student is not found', async () => {
@@ -64,10 +62,7 @@ describe('AttendanceController', () => {
       expect(attendanceService.create).toHaveBeenCalledWith(
         createAttendanceDto,
       );
-      // Add more assertions based on your specific implementation
     });
-
-    // Add more test cases for different scenarios in the createNew method
   });
 
   describe('getAttendanceByStudentId', () => {
@@ -84,11 +79,7 @@ describe('AttendanceController', () => {
         studentId,
       );
       expect(result).toEqual();
-
-      // Add more assertions based on your specific implementation
     });
-
-    // Add more test cases for different scenarios in the getAttendanceByStudentId method
   });
 
   describe('getSingleAttendance', () => {
@@ -103,8 +94,6 @@ describe('AttendanceController', () => {
         attendanceId,
       );
       expect(result).toEqual();
-
-      // Add more assertions based on your specific implementation
     });
 
     it('should throw NotFoundException when attendance is not found', async () => {

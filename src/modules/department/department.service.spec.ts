@@ -32,27 +32,21 @@ describe('DepartmentService', () => {
 
       expect(result).toHaveProperty('_id');
       expect(result.name).toEqual(createDepartmentDto.name);
-      // Add more assertions based on your specific implementation
     });
   });
 
   describe('findAll', () => {
     it('should return an array of departments', async () => {
       const result = await service.findAll();
-
       expect(result).toBeInstanceOf(Array);
-      // Add more assertions based on your specific implementation
     });
   });
 
   describe('findOne', () => {
     it('should return a department by id', async () => {
       const departmentId = 'some-department-id';
-
       const result = await service.findOne(departmentId);
-
       expect(result).toHaveProperty('_id', departmentId);
-      // Add more assertions based on your specific implementation
     });
 
     it('should throw NotFoundException if department is not found', async () => {

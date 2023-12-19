@@ -38,7 +38,10 @@ describe('DepartmentController', () => {
     it('should create a new department', async () => {
       const createDepartmentDto: CreateDepartmentDto = {
         name: 'Test Department',
-        // Add other properties based on your CreateDepartmentDto
+        initial: '',
+        availableSeats: 0,
+        occupiedSeats: 0,
+        batch: 0,
       };
 
       jest
