@@ -17,7 +17,7 @@ export class UserAuthenticationMiddleware implements NestMiddleware {
   constructor(
     private readonly studentService: StudentService,
     private readonly userService: UserService,
-  ) { }
+  ) {}
   async use(req: Request, res: Response, next: NextFunction) {
     this.logger.log(UserAuthenticationMiddleware.name);
     try {
