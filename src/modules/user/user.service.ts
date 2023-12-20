@@ -5,7 +5,7 @@ import {
   BadRequestException,
   Scope,
 } from '@nestjs/common';
-import {} from '@nestjs/common';
+import { } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as mongoose from 'mongoose';
 import { User } from './Schemas/user.schema';
@@ -31,7 +31,7 @@ export class UserService {
   private readonly logger = new Logger(UserService.name);
   constructor(
     @InjectModel(User.name) private userModel: mongoose.Model<User>,
-  ) {}
+  ) { }
   async loginUser(email: string, password: string) {
     try {
       if (!email || !password) {
@@ -167,9 +167,17 @@ export class UserService {
     }
   }
 
-  remove(id: string) {
+  async remove(id: string) {
     try {
-      return this.userModel.findByIdAndDelete(id);
+      return await this.userModel.findByIdAndDelete(id);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async clearUser() {
+    try {
+      return await this.userModel.deleteMany({ role: { $ne: 'ADMIN' } });
     } catch (err) {
       throw err;
     }

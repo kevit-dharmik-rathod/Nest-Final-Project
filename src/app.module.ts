@@ -20,20 +20,6 @@ import { AttendanceModule } from './modules/attendance/attendance.module';
 import { AttendanceController } from './modules/attendance/attendance.controller';
 @Module({
   imports: [
-    // ConfigModule.forRoot({
-    //   envFilePath: '.env',
-    //   isGlobal: true,
-    // }),
-    // MongooseModule.forRootAsync({
-    //   imports: [ConfigModule],
-    //   useFactory: (configService: ConfigService) => {
-    //     return {
-    //       uri: configService.get('MONGODB_URL'),
-    //     };
-    //   },
-    //   inject: [ConfigService],
-    // }),
-    //for test purpose only
     ConfigModule.forRoot({
       envFilePath: '.env',
       isGlobal: true,
@@ -42,11 +28,25 @@ import { AttendanceController } from './modules/attendance/attendance.controller
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
         return {
-          uri: configService.get('TEST_MONGODB_URL'),
+          uri: configService.get('MONGODB_URL'),
         };
       },
       inject: [ConfigService],
     }),
+    //for test purpose only
+    // ConfigModule.forRoot({
+    //   envFilePath: '.env',
+    //   isGlobal: true,
+    // }),
+    // MongooseModule.forRootAsync({
+    //   imports: [ConfigModule],
+    //   useFactory: (configService: ConfigService) => {
+    //     return {
+    //       uri: configService.get('TEST_MONGODB_URL'),
+    //     };
+    //   },
+    //   inject: [ConfigService],
+    // }),
     ExceptionFilterModule,
     UserModule,
     DepartmentModule,
