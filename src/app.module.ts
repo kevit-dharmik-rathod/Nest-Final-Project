@@ -27,26 +27,16 @@ import { AttendanceController } from './modules/attendance/attendance.controller
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
+        console.log(process.env.NEST_ENV);
         return {
-          uri: configService.get('MONGODB_URL'),
+          uri:
+            process.env.NEST_ENV === 'test'
+              ? configService.get('TEST_MONGODB_URL')
+              : configService.get('MONGODB_URL'),
         };
       },
       inject: [ConfigService],
     }),
-    //for test purpose only
-    // ConfigModule.forRoot({
-    //   envFilePath: '.env',
-    //   isGlobal: true,
-    // }),
-    // MongooseModule.forRootAsync({
-    //   imports: [ConfigModule],
-    //   useFactory: (configService: ConfigService) => {
-    //     return {
-    //       uri: configService.get('TEST_MONGODB_URL'),
-    //     };
-    //   },
-    //   inject: [ConfigService],
-    // }),
     ExceptionFilterModule,
     UserModule,
     DepartmentModule,

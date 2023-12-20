@@ -5,7 +5,7 @@ import {
   BadRequestException,
   Scope,
 } from '@nestjs/common';
-import { } from '@nestjs/common';
+import {} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as mongoose from 'mongoose';
 import { User } from './Schemas/user.schema';
@@ -31,8 +31,8 @@ export class UserService {
   private readonly logger = new Logger(UserService.name);
   constructor(
     @InjectModel(User.name) private userModel: mongoose.Model<User>,
-  ) { }
-  async loginUser(email: string, password: string) {
+  ) {}
+  async loginUser(email: string, password: string): Promise<User> {
     try {
       if (!email || !password) {
         throw new BadRequestException('Email or password is missing');
@@ -77,7 +77,7 @@ export class UserService {
     }
   }
 
-  async create(user: CreateUserDto) {
+  async create(user: CreateUserDto): Promise<User> {
     try {
       const newUser = await this.userModel.create(user);
       const tempPassword = newUser.password;
@@ -129,7 +129,9 @@ export class UserService {
     }
   }
 
-  async updateOwnAdminProfile(updateUser: UpdateUserAdminDto) {
+  async updateOwnAdminProfile(
+    updateUser: Partial<UpdateUserAdminDto>,
+  ): Promise<User> {
     try {
       const { id } = this.userObj as UserObject;
       const user = await this.userModel.findById(id);
@@ -177,7 +179,12 @@ export class UserService {
 
   async clearUser() {
     try {
-      return await this.userModel.deleteMany({ role: { $ne: 'ADMIN' } });
+      console.log('enter in to clearUser ');
+      const result = await this.userModel.deleteMany({
+        role: { $ne: 'ADMIN' },
+      });
+      console.log(result);
+      return result;
     } catch (err) {
       throw err;
     }
