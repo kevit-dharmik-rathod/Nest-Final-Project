@@ -90,12 +90,12 @@ export class StudentService {
       if (department.occupiedSeats === department.availableSeats) {
         throw new BadRequestException('NO vacancy available');
       }
-      department.occupiedSeats += 1;
-      await department.save();
       createStudentDto.department = new Types.ObjectId(
         createStudentDto.department,
       );
       const newStudent = await this.studentModel.create(createStudentDto);
+      department.occupiedSeats += 1;
+      await department.save();
       const tempPassword = newStudent.password;
       const salt = randomBytes(8).toString('hex');
       const hash = (await scrypt(tempPassword, salt, 32)) as Buffer;
@@ -151,8 +151,11 @@ export class StudentService {
   async update(id: string, body: UpdateStudentOtherFields): Promise<String> {
     const student = await this.studentModel.findById(id);
     const { department: studentExistingDepartment } = student;
+    console.log('student existing dept is ', studentExistingDepartment);
     const { department: studentNewDepartment } = body;
+    console.log('student new department is ', studentNewDepartment);
     const newDepartment = await this.deptService.findOne(studentNewDepartment);
+    console.log('student find new department is ', newDepartment);
     if (!newDepartment) {
       throw new NotFoundException('Provided new department does not exist');
     }
@@ -163,6 +166,7 @@ export class StudentService {
     const exist_dep = await this.deptService.findOne(
       studentExistingDepartment.toString(),
     );
+    console.log('student service exist_dep is ', exist_dep);
     if (body.hasOwnProperty('department')) {
       if (newDepartment.occupiedSeats >= newDepartment.availableSeats) {
         throw new BadRequestException('No vacancies in provided department');
@@ -198,5 +202,11 @@ export class StudentService {
       await this.attendanceService.deleteManyAttendance(student._id.toString());
     }
     return await this.studentModel.deleteMany({ department: newId });
+  }
+
+  async clearStudents() {
+    try {
+      await this.studentModel.deleteMany({});
+    } catch (error) {}
   }
 }

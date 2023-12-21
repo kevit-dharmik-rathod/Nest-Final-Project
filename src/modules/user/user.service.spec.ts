@@ -7,6 +7,7 @@ import { Admin, staffOne } from '../../../testStubs/testing.stubs';
 import { User, userSchema } from './Schemas/user.schema';
 import { Model, model } from 'mongoose';
 
+//successfully running all the test case first we have to drop test database one time first create admin and then comment that line and run again all test cases
 type updateAdmin = {
   mobileNumber?: number;
   name?: string;
@@ -43,7 +44,7 @@ describe('userService', () => {
     userModel = module.get<Model<User>>(getModelToken(User.name));
     await service.clearUser();
     // user = await service.create(Admin);
-    user = await userModel.findById('65832d51d7df65a46574eadd');
+    user = await userModel.findById('6583d37b443d66ed0f42bf06');
     token = user.authToken;
     // console.log(user);
     // console.log(user.authToken);
@@ -73,7 +74,9 @@ describe('userService', () => {
 
   describe('user login with incorrect credentials', () => {
     it('should be throw BadRequestException that password is incorrect', async () => {
-      const { email, id, role } = await userModel.findOne({ email: 'staff1@gmail.com' });
+      const { email, id, role } = await userModel.findOne({
+        email: 'staff1@gmail.com',
+      });
       service.setUserObj({ id, role });
       await expect(service.loginUser(email, '1234')).rejects.toThrowError(
         BadRequestException,
@@ -144,7 +147,7 @@ describe('userService', () => {
       };
       const tempUser = await service.findUserByEmail('staff1@gmail.com');
       expect(tempUser).not.toBeNull();
-      const newUser = await service.updateOther(tempUser.id, updateData);
+      const newUser = await service.updateOther(updateData);
       expect(newUser).not.toBeNull();
     });
   });

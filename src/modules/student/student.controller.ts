@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Logger,
+  HttpCode,
 } from '@nestjs/common';
 import { StudentService } from './student.service';
 import { CreateStudentDto } from './dto/create-student.dto';
@@ -23,6 +24,7 @@ export class StudentController {
   constructor(private readonly studentService: StudentService) {}
 
   @Post('/login')
+  @HttpCode(200)
   studentLogin(@Body() credentials: LoginStudentDto) {
     return this.studentService.login(credentials.email, credentials.password);
   }
@@ -67,6 +69,7 @@ export class StudentController {
     return this.studentService.findOne(id);
   }
 
+  //update student department with it's id
   @Patch('/update/admin/:id')
   @UseGuards(RolesGuard)
   @Roles('STAFF', 'ADMIN')

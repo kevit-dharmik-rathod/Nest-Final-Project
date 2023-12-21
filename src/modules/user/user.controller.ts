@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  HttpCode,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -19,9 +20,10 @@ import { UpdateOtherUserDto } from './dto/update-otheruser.dto';
 import { User } from './Schemas/user.schema';
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(private readonly userService: UserService) {}
 
   @Post('/login')
+  @HttpCode(200)
   async userLogin(@Body() credentials: LoginUserDto) {
     const user = await this.userService.loginUser(
       credentials.email,
@@ -45,6 +47,7 @@ export class UserController {
   }
 
   @Post('/logout')
+  @HttpCode(200)
   async userLogout() {
     return await this.userService.logOut();
   }
@@ -60,14 +63,11 @@ export class UserController {
     return await this.userService.updateOwnAdminProfile(body);
   }
 
-  @Patch('/updateOthers/:id')
+  @Patch('/updateStaffItsProfile')
   @UseGuards(RolesGuard)
-  @Roles('ADMIN')
-  async updateOthers(
-    @Param('id') id: string,
-    @Body() body: UpdateOtherUserDto,
-  ) {
-    return await this.userService.updateOther(id, body);
+  @Roles('STAFF')
+  async updateOthers(@Body() body: UpdateOtherUserDto) {
+    return await this.userService.updateOther(body);
   }
 
   @Get('/:id')

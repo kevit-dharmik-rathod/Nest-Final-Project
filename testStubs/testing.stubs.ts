@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 import { CreateUserDto } from '../src/modules/user/dto/create-user.dto';
+import { CreateDepartmentDto } from 'src/modules/department/dto/create-department.dto';
 const Admin: CreateUserDto & { _id: Types.ObjectId } = {
     _id: new Types.ObjectId(),
     name: 'brook',
@@ -32,8 +33,29 @@ const staffTwo: CreateUserDto & { _id: Types.ObjectId } = {
     department: 'Management',
     role: 'STAFF'
 }
+
+const depOne: CreateDepartmentDto & { _id: Types.ObjectId } = {
+    _id: new Types.ObjectId(),
+    name: "Computer Engineering",
+    initial: "CE-2023",
+    availableSeats: 5,
+    occupiedSeats: 0,
+    batch: 2023
+}
+
+const depTwo: CreateDepartmentDto & { _id: Types.ObjectId } = {
+    _id: new Types.ObjectId(),
+    name: "Electrical Engineering",
+    initial: "EE-2023",
+    availableSeats: 5,
+    occupiedSeats: 0,
+    batch: 2023
+}
+
 export {
     Admin,
     staffOne,
-    staffTwo
+    staffTwo,
+    depOne,
+    depTwo
 }

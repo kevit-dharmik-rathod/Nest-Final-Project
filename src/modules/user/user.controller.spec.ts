@@ -57,40 +57,42 @@ describe('UserController', () => {
     it('should be able to login', async () => {
       const data: LoginUserDto = {
         email: 'staff2@gmail.com',
-        password: '123'
-      }
+        password: '123',
+      };
       const user = await controller.userLogin(data);
-      const { _id, role } = await userModel.findOne({ email: 'staff2@gmail.com' });
+      const { _id, role } = await userModel.findOne({
+        email: 'staff2@gmail.com',
+      });
       service.setUserObj({ _id, role });
       expect(user.authToken).not.toBeNull();
       expect(user.authToken).toBeDefined();
-    })
+    });
   });
 
   describe('Read profile', () => {
     it('should be return user profile', async () => {
       const user: User = await controller.getMyProfile();
       expect(user).not.toBeNull();
-    })
+    });
   });
 
   describe('update own', () => {
     it('should be updateOwn profile', async () => {
-      const data = { name: 'newstaff2', mobileNumber: 1234 }
+      const data = { name: 'newstaff2', mobileNumber: 1234 };
       const newUser: User = await controller.updateOwn(data);
       expect(newUser).not.toBeNull();
-    })
+    });
   });
 
   describe('update other their profile', () => {
     it('should be updateOther their profile', async () => {
-      const data = { password: 'staff1' }
+      const data = { password: 'staff1' };
       const user = await userModel.findOne({
         email: 'staff2@gmail.com',
-      })
-      const newUser: User = await controller.updateOthers(user.id, data);
+      });
+      const newUser: User = await controller.updateOthers(data);
       expect(newUser).not.toBeNull();
-    })
+    });
   });
 
   describe('logout user', () => {
@@ -98,18 +100,17 @@ describe('UserController', () => {
       const result: String = await controller.userLogout();
       expect(result).toBe('Successfully log out user');
       service.setUserObj({});
-      expect(service.getUserObj()).toStrictEqual({})
-    })
+      expect(service.getUserObj()).toStrictEqual({});
+    });
   });
 
   describe('remove the user', () => {
     it('should be deleted the user', async () => {
       const user = await userModel.findOne({
         email: 'staff2@gmail.com',
-      })
+      });
       const temp: User = await controller.remove(user.id);
       expect(await userModel.findOne({ email: 'staff2@gmail.com' })).toBeNull();
     });
   });
-
 });

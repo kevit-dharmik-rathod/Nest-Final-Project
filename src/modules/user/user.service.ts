@@ -4,7 +4,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { } from '@nestjs/common';
+import {} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as mongoose from 'mongoose';
 import { User } from './Schemas/user.schema';
@@ -30,7 +30,7 @@ export class UserService {
   private readonly logger = new Logger(UserService.name);
   constructor(
     @InjectModel(User.name) private userModel: mongoose.Model<User>,
-  ) { }
+  ) {}
   async loginUser(email: string, password: string): Promise<User> {
     try {
       if (!email || !password) {
@@ -63,9 +63,9 @@ export class UserService {
 
   async logOut(): Promise<String> {
     try {
-      //id instead of id for time of controller testing
-      // const { id } = this.userObj as UserObject;
-      // const user = await this.userModel.findById(id);
+      //_id instead of id for time of controller testing
+      // const { _id } = this.userObj as UserObject;
+      // const user = await this.userModel.findById(_id);
 
       //for testing purpose
       const { id } = this.userObj as UserObject;
@@ -98,7 +98,8 @@ export class UserService {
 
   async findAll(): Promise<User[]> {
     try {
-      return await this.userModel.find({});
+      const result = await this.userModel.find({});
+      return result;
     } catch (err) {
       throw err;
     }
@@ -106,8 +107,9 @@ export class UserService {
 
   async whoAmI(): Promise<User> {
     try {
-      // const { id } = this.userObj as UserObject;
-      // const user = await this.userModel.findById(id);
+      //_id instead of id for time of controller testing
+      // const { _id } = this.userObj as UserObject;
+      // const user = await this.userModel.findById(_id);
 
       //for testing purpose
       const { id } = this.userObj as UserObject;
@@ -141,10 +143,10 @@ export class UserService {
     updateUser: Partial<UpdateUserAdminDto>,
   ): Promise<User> {
     try {
-      // const { id } = this.userObj as UserObject;
-      // const user = await this.userModel.findById(id);
+      //_id instead of id for time of controller testing
+      // const { _id } = this.userObj as UserObject;
+      // const user = await this.userModel.findById(_id);
 
-      //for testing purpose
       const { id } = this.userObj as UserObject;
       const user = await this.userModel.findById(id);
       if (!user) {
@@ -164,11 +166,12 @@ export class UserService {
     }
   }
 
-  async updateOther(id: string, body: object): Promise<User> {
+  async updateOther(body: object): Promise<User> {
     try {
+      const { id } = this.userObj as UserObject;
       const user = await this.userModel.findById(id);
       if (!user) {
-        throw new BadRequestException('User not found');
+        throw new NotFoundException('User not found');
       }
       const salt = randomBytes(8).toString('hex');
       const hash = (await scrypt(body['password'], salt, 32)) as Buffer;
@@ -191,11 +194,9 @@ export class UserService {
 
   async clearUser() {
     try {
-      console.log('enter in to clearUser ');
       const result = await this.userModel.deleteMany({
         role: { $ne: 'ADMIN' },
       });
-      console.log(result);
       return result;
     } catch (err) {
       throw err;

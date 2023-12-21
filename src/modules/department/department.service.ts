@@ -8,7 +8,7 @@ import {
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { Department } from './Schemas/dept.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
+import mongoose, { ObjectId } from 'mongoose';
 import { StudentService } from '../student/student.service';
 @Injectable()
 export class DepartmentService {
@@ -34,9 +34,11 @@ export class DepartmentService {
     }
   }
 
-  async findOne(id: string) {
+  async findOne(id: string | ObjectId) {
     try {
-      return await this.deptModel.findById(id);
+      const result = await this.deptModel.findById(id);
+      console.log('dep in findone dep service', result);
+      return result;
     } catch (error) {
       throw error;
     }
@@ -64,6 +66,14 @@ export class DepartmentService {
     }
   }
 
+  async clearDepartment(): Promise<String> {
+    try {
+      await this.deptModel.deleteMany({});
+      return 'Department deleted successfully';
+    } catch (error) {
+      throw error;
+    }
+  }
   async task1() {
     try {
       const pipeLine: any = [

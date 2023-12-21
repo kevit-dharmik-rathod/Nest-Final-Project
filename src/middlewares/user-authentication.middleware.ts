@@ -9,7 +9,7 @@ import { Request, Response, NextFunction } from 'express';
 import { UserService } from '../modules/user/user.service';
 import * as fs from 'fs';
 import { join } from 'path';
-import { StudentService } from 'src/modules/student/student.service';
+import { StudentService } from '../modules/student/student.service';
 const jwt = require('jsonwebtoken');
 @Injectable()
 export class UserAuthenticationMiddleware implements NestMiddleware {
