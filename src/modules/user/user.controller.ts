@@ -16,9 +16,10 @@ import { UseGuards } from '@nestjs/common';
 import { RolesGuard } from '../../guards/roles.guard';
 import { Roles } from './decorators/user.decorator';
 import { UpdateOtherUserDto } from './dto/update-otheruser.dto';
+import { User } from './Schemas/user.schema';
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Post('/login')
   async userLogin(@Body() credentials: LoginUserDto) {
@@ -32,7 +33,7 @@ export class UserController {
   @Post('/add')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
-  async create(@Body() body: CreateUserDto) {
+  async create(@Body() body: CreateUserDto): Promise<User> {
     return await this.userService.create(body);
   }
 
@@ -48,13 +49,6 @@ export class UserController {
     return await this.userService.logOut();
   }
 
-  @Get()
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
-  findAll() {
-    return this.userService.findAll();
-  }
-
   @Get('/whoami')
   getMyProfile() {
     return this.userService.whoAmI();
@@ -62,7 +56,7 @@ export class UserController {
   @Patch('/updateOwn')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
-  async updateOwn(@Body() body: UpdateUserAdminDto) {
+  async updateOwn(@Body() body: Partial<UpdateUserAdminDto>) {
     return await this.userService.updateOwnAdminProfile(body);
   }
 

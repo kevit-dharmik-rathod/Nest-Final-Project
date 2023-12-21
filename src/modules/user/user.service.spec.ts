@@ -43,7 +43,7 @@ describe('userService', () => {
     userModel = module.get<Model<User>>(getModelToken(User.name));
     await service.clearUser();
     // user = await service.create(Admin);
-    user = await userModel.findById('65826b599bb6b0984ea3261a');
+    user = await userModel.findById('65832d51d7df65a46574eadd');
     token = user.authToken;
     // console.log(user);
     // console.log(user.authToken);
@@ -60,7 +60,7 @@ describe('userService', () => {
 
   describe('user login ', () => {
     it('should be login and saved authToken in logged user', async () => {
-      const { email, password, id, role } = await userModel.findOne({
+      const { email, id, role } = await userModel.findOne({
         email: 'staff1@gmail.com',
       });
       service.setUserObj({ id, role });
@@ -73,7 +73,8 @@ describe('userService', () => {
 
   describe('user login with incorrect credentials', () => {
     it('should be throw BadRequestException that password is incorrect', async () => {
-      const { email } = await userModel.findOne({ email: 'staff1@gmail.com' });
+      const { email, id, role } = await userModel.findOne({ email: 'staff1@gmail.com' });
+      service.setUserObj({ id, role });
       await expect(service.loginUser(email, '1234')).rejects.toThrowError(
         BadRequestException,
       );
@@ -113,7 +114,7 @@ describe('userService', () => {
 
   describe('user login ', () => {
     it('should be login and saved authToken in logged user', async () => {
-      const { email, password, id, role } = await userModel.findOne({
+      const { email, id, role } = await userModel.findOne({
         email: 'brook@gmail.com',
       });
       service.setUserObj({ id, role });
@@ -150,7 +151,6 @@ describe('userService', () => {
 
   describe('user logout ', () => {
     it('should user be logged out and authToken being undefined ', async () => {
-      const data = service.getUserObj();
       const result: String = await service.logOut();
       service.setUserObj({});
       expect(result).toBe('Successfully log out user');
@@ -160,7 +160,7 @@ describe('userService', () => {
 
   describe('login with old credentials', () => {
     it('should not be able to login because password is changed', async () => {
-      const { email, password, id, role } = await userModel.findOne({
+      const { email } = await userModel.findOne({
         email: 'staff1@gmail.com',
       });
       await expect(service.loginUser(email, '123')).rejects.toThrowError(

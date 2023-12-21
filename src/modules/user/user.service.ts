@@ -3,9 +3,8 @@ import {
   Logger,
   NotFoundException,
   BadRequestException,
-  Scope,
 } from '@nestjs/common';
-import {} from '@nestjs/common';
+import { } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as mongoose from 'mongoose';
 import { User } from './Schemas/user.schema';
@@ -31,7 +30,7 @@ export class UserService {
   private readonly logger = new Logger(UserService.name);
   constructor(
     @InjectModel(User.name) private userModel: mongoose.Model<User>,
-  ) {}
+  ) { }
   async loginUser(email: string, password: string): Promise<User> {
     try {
       if (!email || !password) {
@@ -64,6 +63,11 @@ export class UserService {
 
   async logOut(): Promise<String> {
     try {
+      //id instead of id for time of controller testing
+      // const { id } = this.userObj as UserObject;
+      // const user = await this.userModel.findById(id);
+
+      //for testing purpose
       const { id } = this.userObj as UserObject;
       const user = await this.userModel.findById(id);
       if (!user) {
@@ -102,6 +106,10 @@ export class UserService {
 
   async whoAmI(): Promise<User> {
     try {
+      // const { id } = this.userObj as UserObject;
+      // const user = await this.userModel.findById(id);
+
+      //for testing purpose
       const { id } = this.userObj as UserObject;
       const user = await this.userModel.findById(id);
       if (!user) {
@@ -133,6 +141,10 @@ export class UserService {
     updateUser: Partial<UpdateUserAdminDto>,
   ): Promise<User> {
     try {
+      // const { id } = this.userObj as UserObject;
+      // const user = await this.userModel.findById(id);
+
+      //for testing purpose
       const { id } = this.userObj as UserObject;
       const user = await this.userModel.findById(id);
       if (!user) {
