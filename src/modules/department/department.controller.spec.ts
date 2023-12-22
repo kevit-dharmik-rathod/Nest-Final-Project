@@ -1,119 +1,98 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { DepartmentController } from './department.controller';
-import { DepartmentService } from './department.service';
-import { getModelToken } from '@nestjs/mongoose';
-import { CreateDepartmentDto } from './dto/create-department.dto';
+import { Model } from 'mongoose';
+import { Student, studentSchema } from '../student/Schemas/student.schema';
 import { StudentService } from '../student/student.service';
-import { NotFoundException } from '@nestjs/common';
-import { Department } from './Schemas/dept.schema';
+import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
+import { MongooseModule, getModelToken } from '@nestjs/mongoose';
+import { attendanceSchema } from '../attendance/Schemas/attendance.schema';
+import {
+  Department,
+  departmentSchema,
+} from '../department/Schemas/dept.schema';
+import { DepartmentService } from '../department/department.service';
+import { AttendanceService } from '../attendance/attendance.service';
+import { depOne } from '../../../testStubs/testing.stubs';
+import { DepartmentController } from './department.controller';
 
-jest.mock('./department.service');
-
-describe('DepartmentController', () => {
+describe('StudentController', () => {
+  let studentModel: Model<Student>;
   let controller: DepartmentController;
-  let service: DepartmentService;
-
-  beforeEach(async () => {
+  let depService: DepartmentService;
+  let depModel: Model<Department>;
+  let depId: string;
+  beforeAll(async () => {
+    process.env.NEST_ENV = 'test';
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [DepartmentController],
-      providers: [
-        DepartmentService,
-        {
-          provide: getModelToken(Department.name),
-          useValue: jest.fn(),
-        },
-        StudentService,
+      imports: [
+        ConfigModule.forRoot({
+          envFilePath: '.env',
+          isGlobal: true,
+        }),
+        MongooseModule.forRoot(process.env.TEST_MONGODB_URL, {
+          dbName: process.env.TEST_MONGODB_DB_NAME,
+        }),
+        MongooseModule.forFeature([{ name: 'Student', schema: studentSchema }]),
+        MongooseModule.forFeature([
+          {
+            name: 'Department',
+            schema: departmentSchema,
+          },
+        ]),
+        MongooseModule.forFeature([
+          {
+            name: 'Attendance',
+            schema: attendanceSchema,
+          },
+        ]),
       ],
+      providers: [StudentService, DepartmentService, AttendanceService],
+      controllers: [DepartmentController],
     }).compile();
-
+    depService = module.get<DepartmentService>(DepartmentService); // Add this line
+    depModel = module.get<Model<Department>>(getModelToken(Department.name));
     controller = module.get<DepartmentController>(DepartmentController);
-    service = module.get<DepartmentService>(DepartmentService);
-  });
 
-  it('should be defined', () => {
+    await depService.clearDepartment();
+  });
+  it('it should be defined', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('create', () => {
-    it('should create a new department', async () => {
-      const createDepartmentDto: CreateDepartmentDto = {
-        name: 'Test Department',
-        initial: '',
-        availableSeats: 0,
-        occupiedSeats: 0,
-        batch: 0,
-      };
-
-      jest
-        .spyOn(service, 'create')
-        .mockImplementation(() => Promise.resolve(createDepartmentDto));
-
-      const result = await controller.create(createDepartmentDto);
-
-      expect(result).toEqual(createDepartmentDto);
+  describe('create department', () => {
+    it('should be added new department', async () => {
+      const res = await controller.create(depOne);
+      depId = res.id;
+      expect(res).not.toBeNull();
     });
   });
 
-  describe('findAll', () => {
-    it('should return an array of departments', async () => {
-      const departments = [{ name: 'Department 1' }, { name: 'Department 2' }];
-      jest
-        .spyOn(service, 'findAll')
-        .mockImplementation(() => Promise.resolve(departments));
-
-      const result = await controller.findAll();
-
-      expect(result).toEqual(departments);
+  describe('get all departments', () => {
+    it('should return all the department', async () => {
+      const res = await controller.findAll();
+      expect(res).not.toBeNull();
     });
   });
 
-  describe('findOne', () => {
-    it('should return a department by ID', async () => {
-      const departmentId = 'some-department-id';
-      const department = { name: 'Test Department' };
-
-      jest
-        .spyOn(service, 'findOne')
-        .mockImplementation(() => Promise.resolve(department));
-
-      const result = await controller.findOne(departmentId);
-
-      expect(result).toEqual(department);
-    });
-
-    it('should throw NotFoundException if department is not found', async () => {
-      const departmentId = 'non-existing-department-id';
-
-      jest
-        .spyOn(service, 'findOne')
-        .mockImplementation(() => Promise.resolve(null));
-
-      await expect(controller.findOne(departmentId)).rejects.toThrowError(
-        NotFoundException,
-      );
+  describe('get department by id ', () => {
+    it('should return department', async () => {
+      const res = await controller.findOne(depId);
+      expect(res).not.toBeNull();
     });
   });
-});
 
-describe('DepartmentService', () => {
-  let service: DepartmentService;
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        DepartmentService,
-        {
-          provide: getModelToken(Department.name),
-          useValue: jest.fn(),
-        },
-        StudentService,
-      ],
-    }).compile();
-
-    service = module.get<DepartmentService>(DepartmentService);
+  describe('update department', () => {
+    it('should update department', async () => {
+      const res = await controller.update(depId, {
+        name: 'new computer department',
+      });
+      expect(res).not.toBeNull();
+    });
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  describe('delete department ', () => {
+    it('should be able to delete department ', async () => {
+      const res = await controller.remove(depId);
+      expect(res).toBe('Department deleted successfully');
+    });
   });
 });

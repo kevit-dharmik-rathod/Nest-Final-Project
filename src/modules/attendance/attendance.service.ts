@@ -52,9 +52,10 @@ export class AttendanceService {
 
   async deleteManyAttendance(studentId: string) {
     try {
-      console.log(`studentId in deleteManyAttendance ${studentId}`);
       const newId = new Types.ObjectId(studentId);
       return await this.attendanceModel.deleteMany({ studentId: newId });
-    } catch (error) {}
+    } catch (error) {
+      throw error;
+    }
   }
 }

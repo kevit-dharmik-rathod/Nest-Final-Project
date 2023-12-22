@@ -1,283 +1,173 @@
+import { ConfigModule } from '@nestjs/config';
+import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
+import { userSchema } from '../user/Schemas/user.schema';
 import { StudentService } from './student.service';
-import { getModelToken } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { DepartmentService } from '../department/department.service';
+import { Student, studentSchema } from './Schemas/student.schema';
+import {
+  Department,
+  departmentSchema,
+} from '../department/Schemas/dept.schema';
+import { attendanceSchema } from '../attendance/Schemas/attendance.schema';
 import { AttendanceService } from '../attendance/attendance.service';
 import { CreateStudentDto } from './dto/create-student.dto';
-import { UpdateStudentOtherFields } from './dto/update-student-fields.dto';
-import { Types } from 'mongoose';
+import { depOne, depTwo } from '../../../testStubs/testing.stubs';
 
 describe('StudentService', () => {
+  let track: object;
+  let studentModel: Model<Student>;
   let service: StudentService;
-  let studentModel: Model<any>;
-
-  beforeEach(async () => {
+  let depService: DepartmentService;
+  let depModel: Model<Department>;
+  let department: Department;
+  let student: Student;
+  let stId: string;
+  let depId1: Types.ObjectId;
+  let depId2: string;
+  beforeAll(async () => {
+    process.env.NEST_ENV = 'test';
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        StudentService,
-        DepartmentService,
-        AttendanceService,
-        {
-          provide: getModelToken(Student.name),
-          useValue: {
-            new: jest.fn(),
-            constructor: jest.fn(),
-            find: jest.fn(),
-            findById: jest.fn(),
-            create: jest.fn(),
-            save: jest.fn(),
-            findOne: jest.fn(),
-            findByIdAndDelete: jest.fn(),
-            deleteMany: jest.fn(),
+      imports: [
+        ConfigModule.forRoot({
+          envFilePath: '.env',
+          isGlobal: true,
+        }),
+        MongooseModule.forRoot(process.env.TEST_MONGODB_URL, {
+          dbName: process.env.TEST_MONGODB_DB_NAME,
+        }),
+        MongooseModule.forFeature([{ name: 'Student', schema: studentSchema }]),
+        MongooseModule.forFeature([
+          {
+            name: 'Department',
+            schema: departmentSchema,
           },
-        },
+        ]),
+        MongooseModule.forFeature([
+          {
+            name: 'Attendance',
+            schema: attendanceSchema,
+          },
+        ]),
       ],
+      providers: [StudentService, DepartmentService, AttendanceService],
     }).compile();
-
     service = module.get<StudentService>(StudentService);
-    studentModel = module.get<Model<any>>(getModelToken(Student.name));
-  });
+    depService = module.get<DepartmentService>(DepartmentService); // Add this line
+    studentModel = module.get<Model<Student>>(getModelToken(Student.name));
+    depModel = module.get<Model<Department>>(getModelToken(Department.name));
+    await depService.clearDepartment();
+    await service.clearStudents();
 
-  it('should be defined', () => {
+    const { id } = await depService.create(depOne);
+    depId1 = id;
+    const { id: newId } = await depService.create(depTwo);
+    depId2 = newId;
+  });
+  it('it should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  // Test case for showMyProfile method
-  it('should return student profile', async () => {
-    const studentId = new Types.ObjectId();
-    service.setStudentObj({ id: studentId });
-
-    const mockStudent = {
-      _id: studentId,
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      role: 'student',
-      mobileNumber: 1234567890,
-      password: 'someSalt.someHash',
-      department: new Types.ObjectId(),
-      sem: '1',
-      authToken: 'sampleAuthToken',
-    };
-
-    jest.spyOn(studentModel, 'findById').mockResolvedValueOnce(mockStudent);
-    jest
-      .spyOn(service, 'showMyProfile')
-      .mockImplementationOnce(() => service.showMyProfile());
-
-    const result = await service.testShowMyProfile();
-
-    expect(result).toEqual(mockStudent);
+  describe('create student', () => {
+    it('should be add student', async () => {
+      const student1: CreateStudentDto = {
+        name: 'temp',
+        email: 'temp@gmail.com',
+        mobileNumber: 123456789,
+        password: '123',
+        department: depId1,
+        sem: 5,
+        role: 'STUDENT',
+        authToken: 'dummy',
+      };
+      const res = await service.create(student1);
+      expect(res).toBeDefined();
+      expect(res).not.toBeNull();
+    });
   });
 
-  // Test case for updateMyPassword method
-  it('should update student password successfully', async () => {
-    const studentId = new Types.ObjectId();
-    service.setStudentObj({ id: studentId });
-
-    const mockStudent = {
-      _id: studentId,
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      role: 'student',
-      mobileNumber: 1234567890,
-      password: 'someSalt.someHash',
-      department: new Types.ObjectId(),
-      sem: '1',
-      authToken: 'sampleAuthToken',
-    };
-
-    const newPassword = 'newSecurePassword456';
-
-    jest.spyOn(studentModel, 'findById').mockResolvedValueOnce(mockStudent);
-    jest
-      .spyOn(service, 'updateMyPassword')
-      .mockImplementationOnce(() =>
-        service.updateMyPassword({ password: newPassword }),
-      );
-
-    const result = await service.testUpdateMyPassword();
-
-    expect(result).toEqual('Password updated successfully');
+  describe('create student', () => {
+    it('should be add student', async () => {
+      const student1: CreateStudentDto = {
+        name: 'temp1',
+        email: 'temp1@gmail.com',
+        mobileNumber: 123456789,
+        password: '123',
+        department: depId1,
+        sem: 5,
+        role: 'STUDENT',
+        authToken: 'dummy',
+      };
+      const res = await service.create(student1);
+      expect(res).toBeDefined();
+      expect(res).not.toBeNull();
+    });
   });
 
-  // Test case for findOne method
-  it('should find a student by ID', async () => {
-    const studentId = new Types.ObjectId();
-    const mockStudent = {
-      _id: studentId,
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      role: 'student',
-      mobileNumber: 1234567890,
-      password: 'someSalt.someHash',
-      department: new Types.ObjectId(),
-      sem: '1',
-      authToken: 'sampleAuthToken',
-    };
-
-    jest.spyOn(studentModel, 'findById').mockResolvedValueOnce(mockStudent);
-    jest
-      .spyOn(service, 'findOne')
-      .mockImplementationOnce(() => service.findOne(studentId.toString()));
-
-    const result = await service.testFindOne();
-
-    expect(result).toEqual(mockStudent);
+  describe('student login', () => {
+    it('should be login student ', async () => {
+      const st1 = await service.login('temp@gmail.com', '123');
+      expect(st1).not.toBeNull();
+      service.setStudentObj({ id: st1._id, role: 'STUDENT' });
+    });
   });
 
-  // Test case for update method
-  it('should update student information successfully', async () => {
-    const studentId = new Types.ObjectId();
-    const updateFields: UpdateStudentOtherFields = {
-      name: 'Updated John Doe',
-      email: 'updated.john.doe@example.com',
-      mobileNumber: 9876543210,
-      department: new Types.ObjectId(),
-      sem: '2',
-    };
-
-    const mockStudent = {
-      _id: studentId,
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      role: 'student',
-      mobileNumber: 1234567890,
-      password: 'someSalt.someHash',
-      department: new Types.ObjectId(),
-      sem: '1',
-      authToken: 'sampleAuthToken',
-    };
-
-    const mockExistingDepartment = {
-      _id: mockStudent.department,
-      occupiedSeats: 5,
-      availableSeats: 10,
-    };
-
-    const mockNewDepartment = {
-      _id: updateFields.department,
-      occupiedSeats: 3,
-      availableSeats: 10,
-    };
-
-    jest.spyOn(studentModel, 'findById').mockResolvedValueOnce(mockStudent);
-    jest
-      .spyOn(service.deptService, 'findOne')
-      .mockResolvedValueOnce(mockExistingDepartment)
-      .mockResolvedValueOnce(mockNewDepartment);
-
-    jest
-      .spyOn(service.deptService, 'update')
-      .mockResolvedValueOnce(mockExistingDepartment);
-    jest
-      .spyOn(service.deptService, 'update')
-      .mockResolvedValueOnce(mockNewDepartment);
-
-    jest.spyOn(studentModel, 'save').mockResolvedValueOnce(mockStudent);
-
-    jest
-      .spyOn(service, 'update')
-      .mockImplementationOnce(() =>
-        service.update(studentId.toString(), updateFields),
-      );
-
-    const result = await service.testUpdate();
-
-    expect(result).toEqual('department updated successfully');
+  describe('findAll student', () => {
+    it('should return all students', async () => {
+      const res1 = await service.findAll();
+      expect(res1).not.toBeNull();
+    });
   });
 
-  // Test case for remove method
-  it('should delete a student successfully', async () => {
-    const studentId = new Types.ObjectId();
-    const mockStudent = {
-      _id: studentId,
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      role: 'student',
-      mobileNumber: 1234567890,
-      password: 'someSalt.someHash',
-      department: new Types.ObjectId(),
-      sem: '1',
-      authToken: 'sampleAuthToken',
-    };
-
-    const mockDepartment = {
-      _id: mockStudent.department,
-      occupiedSeats: 5,
-      availableSeats: 10,
-    };
-
-    jest.spyOn(studentModel, 'findById').mockResolvedValueOnce(mockStudent);
-    jest
-      .spyOn(service.deptService, 'findOne')
-      .mockResolvedValueOnce(mockDepartment);
-
-    jest
-      .spyOn(service.attendanceService, 'deleteManyAttendance')
-      .mockResolvedValueOnce(undefined);
-    jest
-      .spyOn(studentModel, 'findByIdAndDelete')
-      .mockResolvedValueOnce(undefined);
-
-    jest
-      .spyOn(service, 'remove')
-      .mockImplementationOnce(() => service.remove(studentId.toString()));
-
-    const result = await service.testRemove();
-
-    expect(result).toEqual('student deleted successfully');
+  describe('show profile', () => {
+    it('should return student profile', async () => {
+      const res = await service.showMyProfile();
+      expect(res).not.toBeNull();
+    });
   });
 
-  // Test case for deleteStudents method
-  it('should delete all students in a department successfully', async () => {
-    const departmentId = new Types.ObjectId();
-    const mockStudent1 = {
-      _id: new Types.ObjectId(),
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      role: 'student',
-      mobileNumber: 1234567890,
-      password: 'someSalt.someHash',
-      department: departmentId,
-      sem: '1',
-      authToken: 'sampleAuthToken',
-    };
+  describe('change student password', () => {
+    it('should change student password', async () => {
+      const res = await service.updateMyPassword({
+        password: '1234',
+      });
+      expect(res).not.toBeNull();
+    });
+  });
 
-    const mockStudent2 = {
-      _id: new Types.ObjectId(),
-      name: 'Jane Doe',
-      email: 'jane.doe@example.com',
-      role: 'student',
-      mobileNumber: 9876543210,
-      password: 'anotherSalt.anotherHash',
-      department: departmentId,
-      sem: '2',
-      authToken: 'anotherSampleAuthToken',
-    };
+  describe('change student details by admin', () => {
+    it('should be able to change student details', async () => {
+      console.log(service.getStudentObj()['id']);
+      const student = await service.findOne(service.getStudentObj()['id']);
+      console.log('student old department is  ', student.department);
+      console.log('student new department is ', depId2);
+      const res = await service.update(service.getStudentObj()['id'], {
+        department: depId2,
+        name: 'new test name',
+      });
+      expect(res).not.toBeNull();
+    });
+  });
 
-    const mockDepartment = {
-      _id: departmentId,
-      occupiedSeats: 10,
-      availableSeats: 20,
-    };
+  describe('logout student ', () => {
+    it('should log out the student ', async () => {
+      const st1 = await service.logout();
+      expect(st1).toBe('Student logout successfully');
+    });
+  });
 
-    jest
-      .spyOn(studentModel, 'find')
-      .mockResolvedValueOnce([mockStudent1, mockStudent2]);
-    jest
-      .spyOn(service.attendanceService, 'deleteManyAttendance')
-      .mockResolvedValueOnce(undefined);
-    jest.spyOn(studentModel, 'deleteMany').mockResolvedValueOnce(undefined);
+  describe('remove student by id', () => {
+    it('should be delete student', async () => {
+      const id = await service.getStudentObj()['id'];
+      const res = await service.remove(id);
+    });
+  });
 
-    jest
-      .spyOn(service, 'deleteStudents')
-      .mockImplementationOnce(() =>
-        service.deleteStudents(departmentId.toString()),
-      );
-
-    const result = await service.testDeleteStudents();
-
-    expect(result).toEqual(undefined);
+  describe('bot show profile after logout', () => {
+    it('should not return student profile', async () => {
+      const res = await service.showMyProfile();
+      expect(res).toBeNull();
+    });
   });
 });

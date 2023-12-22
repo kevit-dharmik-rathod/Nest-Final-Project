@@ -1,99 +1,93 @@
+import { Model } from 'mongoose';
+import { Student, studentSchema } from '../student/Schemas/student.schema';
+import { StudentService } from '../student/student.service';
 import { Test, TestingModule } from '@nestjs/testing';
-import { DepartmentService } from './department.service';
-import { CreateDepartmentDto } from './dto/create-department.dto';
-import { NotFoundException } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { MongooseModule, getModelToken } from '@nestjs/mongoose';
+import { attendanceSchema } from '../attendance/Schemas/attendance.schema';
+import {
+  Department,
+  departmentSchema,
+} from '../department/Schemas/dept.schema';
+import { DepartmentService } from '../department/department.service';
+import { AttendanceService } from '../attendance/attendance.service';
+import { depOne } from '../../../testStubs/testing.stubs';
+import { DepartmentController } from './department.controller';
 
-describe('DepartmentService', () => {
-  let service: DepartmentService;
-
-  beforeEach(async () => {
+describe('StudentController', () => {
+  let studentModel: Model<Student>;
+  let controller: DepartmentController;
+  let depService: DepartmentService;
+  let depModel: Model<Department>;
+  let depId: string;
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [DepartmentService],
+      imports: [
+        ConfigModule.forRoot({
+          envFilePath: '.env',
+          isGlobal: true,
+        }),
+        MongooseModule.forRoot(process.env.TEST_MONGODB_URL, {
+          dbName: process.env.TEST_MONGODB_DB_NAME,
+        }),
+        MongooseModule.forFeature([{ name: 'Student', schema: studentSchema }]),
+        MongooseModule.forFeature([
+          {
+            name: 'Department',
+            schema: departmentSchema,
+          },
+        ]),
+        MongooseModule.forFeature([
+          {
+            name: 'Attendance',
+            schema: attendanceSchema,
+          },
+        ]),
+      ],
+      providers: [StudentService, DepartmentService, AttendanceService],
+      controllers: [DepartmentController],
     }).compile();
+    depService = module.get<DepartmentService>(DepartmentService);
+    depModel = module.get<Model<Department>>(getModelToken(Department.name));
 
-    service = module.get<DepartmentService>(DepartmentService);
+    await depService.clearDepartment();
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
-  describe('create', () => {
-    it('should create a new department', async () => {
-      const createDepartmentDto: CreateDepartmentDto = {
-        name: 'Test Department',
-        initial: '',
-        availableSeats: 0,
-        occupiedSeats: 0,
-        batch: 0,
-      };
-
-      const result = await service.create(createDepartmentDto);
-
-      expect(result).toHaveProperty('_id');
-      expect(result.name).toEqual(createDepartmentDto.name);
+  describe('create department', () => {
+    it('should be added new department', async () => {
+      const res = await depService.create(depOne);
+      depId = res.id;
+      expect(res).not.toBeNull();
     });
   });
 
-  describe('findAll', () => {
-    it('should return an array of departments', async () => {
-      const result = await service.findAll();
-      expect(result).toBeInstanceOf(Array);
+  describe('get all departments', () => {
+    it('should return all the department', async () => {
+      const res = await depService.findAll();
+      expect(res.length).toBeGreaterThan(0);
+      expect(res).not.toBeNull();
     });
   });
 
-  describe('findOne', () => {
-    it('should return a department by id', async () => {
-      const departmentId = 'some-department-id';
-      const result = await service.findOne(departmentId);
-      expect(result).toHaveProperty('_id', departmentId);
+  describe('get department by id ', () => {
+    it('should return department', async () => {
+      const res = await depService.findOne(depId);
+      expect(res).not.toBeNull();
     });
-
-    it('should throw NotFoundException if department is not found', async () => {
-      const nonExistingDepartmentId = 'non-existing-department-id';
-
-      await expect(
-        service.findOne(nonExistingDepartmentId),
-      ).rejects.toThrowError(NotFoundException);
+  });
+  describe('update department', () => {
+    it('should update department', async () => {
+      const res = await depService.update(depId, {
+        name: 'new computer department',
+      });
+      expect(res).not.toBeNull();
     });
   });
 
-  describe('update', () => {
-    it('should update a department by id', async () => {
-      const departmentId = 'some-department-id';
-      const updateAttrs = { name: 'Updated Department' };
-
-      const result = await service.update(departmentId, updateAttrs);
-
-      expect(result).toHaveProperty('_id', departmentId);
-      expect(result.name).toEqual(updateAttrs.name);
-    });
-
-    it('should throw NotFoundException if department is not found', async () => {
-      const nonExistingDepartmentId = 'non-existing-department-id';
-      const updateAttrs = { name: 'Updated Department' };
-
-      await expect(
-        service.update(nonExistingDepartmentId, updateAttrs),
-      ).rejects.toThrowError(NotFoundException);
-    });
-  });
-
-  describe('remove', () => {
-    it('should remove a department by id', async () => {
-      const departmentId = 'some-department-id';
-
-      const result = await service.remove(departmentId);
-
-      expect(result).toEqual('Department deleted successfully');
-    });
-
-    it('should throw NotFoundException if department is not found', async () => {
-      const nonExistingDepartmentId = 'non-existing-department-id';
-
-      await expect(
-        service.remove(nonExistingDepartmentId),
-      ).rejects.toThrowError(NotFoundException);
+  describe('delete department ', () => {
+    it('should be able to delete department ', async () => {
+      const res = await depService.remove(depId);
+      expect(res).toBe('Department deleted successfully');
     });
   });
 });

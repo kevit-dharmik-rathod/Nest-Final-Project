@@ -28,10 +28,9 @@ import { AttendanceController } from './modules/attendance/attendance.controller
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
         return {
-          // uri:
-          //   process.env.NEST_ENV === 'test'
-          //     ? configService.get('TEST_MONGODB_URL')
-          //     : configService.get('MONGODB_URL'),
+          // uri: process.env.NEST_ENV === 'test'
+          //   ? configService.get('TEST_MONGODB_URL')
+          //   : configService.get('MONGODB_URL'),
           uri: configService.get('MONGODB_URL'),
         };
       },

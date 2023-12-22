@@ -148,15 +148,14 @@ export class StudentService {
     }
   }
 
-  async update(id: string, body: UpdateStudentOtherFields): Promise<String> {
+  async update(
+    id: string,
+    body: Partial<UpdateStudentOtherFields>,
+  ): Promise<String> {
     const student = await this.studentModel.findById(id);
     const { department: studentExistingDepartment } = student;
-    console.log('student existing dept is ', studentExistingDepartment);
     const { department: studentNewDepartment } = body;
-    console.log('student new department is ', studentNewDepartment);
     const newDepartment = await this.deptService.findOne(studentNewDepartment);
-    console.log('newDepartment is ', newDepartment);
-    console.log('student find new department is ', newDepartment);
     if (!newDepartment) {
       throw new NotFoundException('Provided new department does not exist');
     }
@@ -167,7 +166,6 @@ export class StudentService {
     const exist_dep = await this.deptService.findOne(
       studentExistingDepartment.toString(),
     );
-    console.log('student service exist_dep is ', exist_dep);
     if (body.hasOwnProperty('department')) {
       if (newDepartment.occupiedSeats >= newDepartment.availableSeats) {
         throw new BadRequestException('No vacancies in provided department');
@@ -184,7 +182,6 @@ export class StudentService {
         await student.save();
       }
     }
-
     return 'department updated successfully';
   }
   async remove(id: string): Promise<String> {
@@ -203,7 +200,6 @@ export class StudentService {
     const newId = new Types.ObjectId(deptId);
     const allStudents = await this.studentModel.find({ department: newId });
     for (const student of allStudents) {
-      console.log(student._id);
       await this.attendanceService.deleteManyAttendance(student._id.toString());
     }
     return await this.studentModel.deleteMany({ department: newId });

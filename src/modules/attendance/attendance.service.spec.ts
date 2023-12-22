@@ -1,113 +1,67 @@
+import { ConfigModule } from '@nestjs/config';
+import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { getModelToken } from '@nestjs/mongoose';
-import mongoose, { Types } from 'mongoose';
-import { NotFoundException } from '@nestjs/common';
+import { userSchema } from '../user/Schemas/user.schema';
 import { StudentService } from '../student/student.service';
-import { AttendanceService } from './attendance.service';
-import { CreateAttendanceDto } from './dtos/create-attendance.dto';
-import { Attendance } from './Schemas/attendance.schema';
+import { Model, Types } from 'mongoose';
+import { DepartmentService } from '../department/department.service';
+import { Student, studentSchema } from '../student/Schemas/student.schema';
+import {
+  Department,
+  departmentSchema,
+} from '../department/Schemas/dept.schema';
+import { attendanceSchema } from '../attendance/Schemas/attendance.schema';
+import { AttendanceService } from '../attendance/attendance.service';
+import { depOne, depTwo } from '../../../testStubs/testing.stubs';
 
-describe('AttendanceService', () => {
-  let service: AttendanceService;
+describe('StudentService', () => {
+  let track: object;
+  let studentModel: Model<Student>;
+  let attendanceService: AttendanceService;
   let studentService: StudentService;
-
-  beforeEach(async () => {
+  let depService: DepartmentService;
+  let depModel: Model<Department>;
+  let department: Department;
+  let student: Student;
+  let stId: string;
+  let depId1: Types.ObjectId;
+  let depId2: string;
+  beforeAll(async () => {
+    process.env.NEST_ENV = 'test';
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        AttendanceService,
-        {
-          provide: getModelToken(Attendance.name),
-          useValue: {
-            create: jest.fn(),
-            find: jest.fn(),
-            findById: jest.fn(),
-            deleteMany: jest.fn(),
+      imports: [
+        ConfigModule.forRoot({
+          envFilePath: '.env',
+          isGlobal: true,
+        }),
+        MongooseModule.forRoot(process.env.TEST_MONGODB_URL, {
+          dbName: process.env.TEST_MONGODB_DB_NAME,
+        }),
+        MongooseModule.forFeature([{ name: 'Student', schema: studentSchema }]),
+        MongooseModule.forFeature([
+          {
+            name: 'Department',
+            schema: departmentSchema,
           },
-        },
-        {
-          provide: StudentService,
-          useValue: {
-            findOne: jest.fn(),
+        ]),
+        MongooseModule.forFeature([
+          {
+            name: 'Attendance',
+            schema: attendanceSchema,
           },
-        },
+        ]),
       ],
+      providers: [StudentService, DepartmentService, AttendanceService],
     }).compile();
-
-    service = module.get<AttendanceService>(AttendanceService);
-    studentService = module.get<StudentService>(StudentService);
-  });
-
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
-  describe('create', () => {
-    it('should create attendance', async () => {
-      const id = new mongoose.Types.ObjectId();
-      const createAttendanceDto = {
-        studentId: id,
-        date: '12 - 12 - 2022',
-        isPresent: true,
-      };
-
-      const findOneSpy = jest.spyOn(studentService, 'findOne');
-      findOneSpy.mockResolvedValueOnce({});
-
-      await service.create(createAttendanceDto);
-
-      expect(findOneSpy).toHaveBeenCalledWith(createAttendanceDto.studentId);
-      expect(findOneSpy).toHaveBeenCalledTimes(1);
-    });
-
-    it('should throw NotFoundException when student is not found', async () => {
-      const id = new mongoose.Types.ObjectId();
-      const createAttendanceDto = {
-        studentId: id,
-        date: '12 - 12 - 2022',
-        isPresent: true,
-      };
-
-      const findOneSpy = jest.spyOn(studentService, 'findOne');
-      findOneSpy.mockResolvedValueOnce(null);
-
-      await expect(service.create(createAttendanceDto)).rejects.toThrowError(
-        NotFoundException,
-      );
-
-      expect(findOneSpy).toHaveBeenCalledWith(createAttendanceDto.studentId);
-      expect(findOneSpy).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe('studentAttendance', () => {
-    it('should get attendance for a student', async () => {
-      const studentId = 'some-student-id';
-      await service.studentAttendance(studentId);
-    });
-  });
-
-  describe('getOneAttendance', () => {
-    it('should get one attendance by id', async () => {
-      const attendanceId = 'some-attendance-id';
-      await service.getOneAttendance(attendanceId);
-    });
-
-    it('should return null if attendance is not found by id', async () => {
-      const nonExistingAttendanceId = 'non-existing-attendance-id';
-      jest
-        .spyOn(service['attendanceModel'], 'findById')
-        .mockResolvedValueOnce(null);
-
-      const result = await service.getOneAttendance(nonExistingAttendanceId);
-
-      expect(result).toBeNull();
-    });
-  });
-
-  describe('deleteManyAttendance', () => {
-    it('should delete many attendance records for a student', async () => {
-      const studentId = 'some-student-id';
-      await service.deleteManyAttendance(studentId);
-    });
+    depService = module.get<DepartmentService>(DepartmentService);
+    attendanceService = module.get<AttendanceService>(AttendanceService);
+    studentService = module.get<StudentService>(StudentService); // Add this line
+    studentModel = module.get<Model<Student>>(getModelToken(Student.name));
+    depModel = module.get<Model<Department>>(getModelToken(Department.name));
+    await studentService.clearStudents();
+    const { id } = await depService.create(depOne);
+    depId1 = id;
+    const { id: newId } = await depService.create(depTwo);
+    depId2 = newId;
   });
 });

@@ -37,7 +37,6 @@ export class DepartmentService {
   async findOne(id: string | ObjectId) {
     try {
       const result = await this.deptModel.findById(id);
-      console.log('dep in findone dep service', result);
       return result;
     } catch (error) {
       throw error;

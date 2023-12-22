@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 import { CreateUserDto } from '../src/modules/user/dto/create-user.dto';
 import { CreateDepartmentDto } from 'src/modules/department/dto/create-department.dto';
+import { CreateStudentDto } from 'src/modules/student/dto/create-student.dto';
 const Admin: CreateUserDto & { _id: Types.ObjectId } = {
     _id: new Types.ObjectId(),
     name: 'brook',
