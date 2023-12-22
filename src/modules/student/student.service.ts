@@ -155,6 +155,7 @@ export class StudentService {
     const { department: studentNewDepartment } = body;
     console.log('student new department is ', studentNewDepartment);
     const newDepartment = await this.deptService.findOne(studentNewDepartment);
+    console.log('newDepartment is ', newDepartment);
     console.log('student find new department is ', newDepartment);
     if (!newDepartment) {
       throw new NotFoundException('Provided new department does not exist');
@@ -162,7 +163,7 @@ export class StudentService {
     if (!student) {
       throw new NotFoundException('Student does not exist');
     }
-    Object.assign(student, body.name, body.email, body.mobileNumber, body.sem);
+
     const exist_dep = await this.deptService.findOne(
       studentExistingDepartment.toString(),
     );
@@ -175,7 +176,11 @@ export class StudentService {
         await exist_dep.save();
         newDepartment.occupiedSeats += 1;
         await newDepartment.save();
-        Object.assign(student, newDepartment);
+        student.name = body.name || student.name;
+        student.email = body.email || student.email;
+        student.mobileNumber = body.mobileNumber || student.mobileNumber;
+        student.sem = body.sem || student.sem;
+        student.department = new Types.ObjectId(body.department);
         await student.save();
       }
     }

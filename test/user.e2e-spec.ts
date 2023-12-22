@@ -46,7 +46,7 @@ describe('AppController (e2e)', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
-        MongooseModule.forRoot('mongodb://localhost:27017/', {
+        MongooseModule.forRoot('mongodb://0.0.0.0:27017/', {
           dbName: 'NEST-COLLEGE-ERP-TEST',
         }),
         MongooseModule.forFeature([
@@ -232,6 +232,7 @@ describe('AppController (e2e)', () => {
         .patch(`/student/update/admin/${student._id}`)
         .send({
           department: result.body[1]._id,
+          name: 'newjeet',
         })
         .set('Authorization', `Bearer ${token}`)
         .expect(200);

@@ -33,8 +33,8 @@ export class UserController {
   }
 
   @Post('/add')
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  // @UseGuards(RolesGuard)
+  // @Roles('ADMIN')
   async create(@Body() body: CreateUserDto): Promise<User> {
     return await this.userService.create(body);
   }

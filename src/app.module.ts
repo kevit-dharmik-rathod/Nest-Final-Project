@@ -27,24 +27,6 @@ import { AttendanceController } from './modules/attendance/attendance.controller
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
-        const uri = configService.get('MONGODB_URL');
-        const mongooseOptions = {
-          // Additional Mongoose options if needed
-        };
-
-        const mongoose = await import('mongoose');
-        mongoose.connection.on('connected', () => {
-          console.log(`Mongoose connected to ${uri}`);
-        });
-
-        mongoose.connection.on('error', (err) => {
-          console.error(`Mongoose connection error: ${err}`);
-        });
-
-        mongoose.connection.on('disconnected', () => {
-          console.warn('Mongoose disconnected');
-        });
-
         return {
           // uri:
           //   process.env.NEST_ENV === 'test'

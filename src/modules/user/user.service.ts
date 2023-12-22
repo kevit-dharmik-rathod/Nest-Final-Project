@@ -33,6 +33,7 @@ export class UserService {
   ) {}
   async loginUser(email: string, password: string): Promise<User> {
     try {
+      console.log('current working directory is ', process.cwd());
       if (!email || !password) {
         throw new BadRequestException('Email or password is missing');
       }
@@ -45,6 +46,16 @@ export class UserService {
       if (storedHash !== hash.toString('hex')) {
         throw new BadRequestException('password is incorrect');
       }
+      const filePath = join(__dirname, '../../../keys/Private.key');
+      console.log(filePath);
+      // if (!fs.existsSync(filePath)) {
+      //   throw new Error(`File not found: ${filePath}`);
+      // }
+      const fileData = fs.readFileSync(filePath, 'utf-8');
+      console.log(fileData);
+
+      // Display or process the file data
+      console.log('File Content:', fileData);
       const privatekey = fs.readFileSync(
         join(__dirname, '../../../keys/Private.key'),
       );
@@ -57,6 +68,7 @@ export class UserService {
       await user.save();
       return user;
     } catch (err) {
+      this.logger.error(`error in login: ${err}`);
       throw err;
     }
   }

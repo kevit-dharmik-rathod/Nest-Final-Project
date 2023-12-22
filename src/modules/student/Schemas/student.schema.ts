@@ -22,7 +22,7 @@ export class Student {
   department: Types.ObjectId;
 
   @Prop()
-  sem: string;
+  sem: number;
 
   @Prop()
   authToken: string;
