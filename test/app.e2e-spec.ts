@@ -71,7 +71,9 @@ describe('AppController (e2e)', () => {
     departmentService = moduleFixture.get<DepartmentService>(DepartmentService);
     attendanceService = moduleFixture.get<AttendanceService>(AttendanceService);
     userModel = moduleFixture.get<Model<User>>(getModelToken('User'));
-    attendanceModel = moduleFixture.get<Model<Attendance>>(getModelToken('Attendance'));
+    attendanceModel = moduleFixture.get<Model<Attendance>>(
+      getModelToken('Attendance'),
+    );
     studentService = moduleFixture.get<StudentService>(StudentService);
     studentModel = moduleFixture.get<Model<Student>>(getModelToken('Student'));
     departmentModel = moduleFixture.get<Model<Department>>(
@@ -251,10 +253,14 @@ describe('AppController (e2e)', () => {
       const at1: CreateAttendanceDto = {
         studentId: new Types.ObjectId(stId1),
         date: '12-11-2023',
-        isPresent: true
+        isPresent: true,
       };
-      await request(app.getHttpServer()).post('/attendance/add').send(at1).set('Authorization', `Bearer ${token}`).expect(201);
-    })
+      await request(app.getHttpServer())
+        .post('/attendance/add')
+        .send(at1)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(201);
+    });
   });
 
   describe('add attendance', () => {
@@ -262,36 +268,49 @@ describe('AppController (e2e)', () => {
       const at1: CreateAttendanceDto = {
         studentId: new Types.ObjectId(stId1),
         date: '13-11-2023',
-        isPresent: true
+        isPresent: true,
       };
-      await request(app.getHttpServer()).post('/attendance/add').send(at1).set('Authorization', `Bearer ${token}`).expect(201);
-    })
+      await request(app.getHttpServer())
+        .post('/attendance/add')
+        .send(at1)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(201);
+    });
   });
-
-
 
   describe('get attendance of student by student id', () => {
     it('should be able to get all attendance of student id', async () => {
-      const res = await request(app.getHttpServer()).get(`/attendance/student/${stId1}`).set('Authorization', `Bearer ${token}`).expect(200);
+      const res = await request(app.getHttpServer())
+        .get(`/attendance/student/${stId1}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
       atId1 = res.body[1]._id;
-    })
+    });
   });
 
   describe('get single attendance by attendance id', () => {
     it('should be able to get single attendance', async () => {
       console.log('atid1 is ', atId1);
-      const res = await request(app.getHttpServer()).get(`/attendance/${atId1}`).set('Authorization', `Bearer ${token}`).expect(200);
-    })
+      const res = await request(app.getHttpServer())
+        .get(`/attendance/${atId1}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+    });
   });
 
   //----------------------------------------------------ending attendance integration testing----------------------------------------------------//
 
-
   describe('delete department', () => {
     it('should delete the department', async () => {
-      const result = await request(app.getHttpServer()).get('/department/getall').set('Authorization', `Bearer ${token}`).expect(200);
-      const dep = await request(app.getHttpServer()).delete(`/department/delete/${result.body[1]._id}`).set('Authorization', `Bearer ${token}`).expect(200);
-    })
+      const result = await request(app.getHttpServer())
+        .get('/department/getall')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+      const dep = await request(app.getHttpServer())
+        .delete(`/department/delete/${result.body[1]._id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+    });
   });
 
   //----------------------------------------------------ending Department integration testing----------------------------------------------------//
