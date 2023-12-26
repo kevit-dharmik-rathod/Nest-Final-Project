@@ -26,10 +26,10 @@ export class UserAuthenticationMiddleware implements NestMiddleware {
         throw new ForbiddenException('Please Authenticate');
       }
       const token = req.header('Authorization').replace('Bearer ', '');
-      const privatekey = fs.readFileSync(
-        join(__dirname, '../../keys/Private.key'),
-      );
-      const { id, role } = jwt.verify(token, privatekey);
+      // const privatekey = fs.readFileSync(
+      //   join(__dirname, '../../keys/Private.key'),
+      // );
+      const { id, role } = jwt.verify(token, process.env.JWT_AUTH_SECRET);
       const person =
         role === 'STUDENT'
           ? await this.studentService.findOne(id)

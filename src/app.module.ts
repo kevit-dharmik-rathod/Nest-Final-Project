@@ -52,7 +52,7 @@ export class AppModule implements NestModule {
       .exclude(
         { path: '/user/login', method: RequestMethod.POST },
         //for test purpose only
-        // { path: '/user/add', method: RequestMethod.POST },
+        { path: '/user/add', method: RequestMethod.POST },
         { path: '/student/login', method: RequestMethod.POST },
       )
       .forRoutes(

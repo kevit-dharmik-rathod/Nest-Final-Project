@@ -18,6 +18,11 @@ export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
   // create a new attendance
+  /**
+   *
+   * @param attendanceDto of attendance fields body
+   * @returns attendance object
+   */
   @Post('/add')
   @UseGuards(RolesGuard)
   @Roles('ADMIN', 'STAFF')
@@ -26,6 +31,11 @@ export class AttendanceController {
   }
 
   //Get attendance by student id
+  /**
+   * get all attendance of given student
+   * @param studentId of student
+   * @returns attendance object
+   */
   @Get('/student/:id')
   @UseGuards(RolesGuard)
   @Roles('ADMIN', 'STAFF')
@@ -34,6 +44,11 @@ export class AttendanceController {
   }
 
   //Get single attendance by attendance id
+  /**
+   *
+   * @param id of attendance
+   * @returns attendance object
+   */
   @Get('/:id')
   @UseGuards(RolesGuard)
   @Roles('ADMIN', 'STAFF')

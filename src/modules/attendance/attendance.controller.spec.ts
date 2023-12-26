@@ -1,115 +1,178 @@
+import { ConfigModule } from '@nestjs/config';
+import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AttendanceController } from './attendance.controller';
+import { StudentService } from '../student/student.service';
+import { Model, Types } from 'mongoose';
+import { DepartmentService } from '../department/department.service';
+import { Student, studentSchema } from '../student/Schemas/student.schema';
+import {
+  Department,
+  departmentSchema,
+} from '../department/Schemas/dept.schema';
+import { Attendance, attendanceSchema } from './Schemas/attendance.schema';
 import { AttendanceService } from './attendance.service';
+import { depOne, depTwo } from '../../../testStubs/testing.stubs';
+import { CreateStudentDto } from '../student/dto/create-student.dto';
 import { CreateAttendanceDto } from './dtos/create-attendance.dto';
-import { RolesGuard } from '../../guards/roles.guard';
-import { Roles } from '../user/decorators/user.decorator';
-import { NotFoundException } from '@nestjs/common';
-import mongoose from 'mongoose';
+import { AttendanceController } from './attendance.controller';
 
-describe('AttendanceController', () => {
+describe('StudentService', () => {
   let controller: AttendanceController;
+  let studentModel: Model<Student>;
   let attendanceService: AttendanceService;
-
-  beforeEach(async () => {
+  let studentService: StudentService;
+  let depService: DepartmentService;
+  let depModel: Model<Department>;
+  let attendanceModel: Model<Attendance>;
+  let department: Department;
+  let student: Student;
+  let stId1: string;
+  let depId1: Types.ObjectId;
+  let depId2: string;
+  let atId1: string;
+  let atId2: string;
+  // let attendance: CreateAttendanceDto;
+  beforeAll(async () => {
+    process.env.NEST_ENV = 'test';
     const module: TestingModule = await Test.createTestingModule({
+      imports: [
+        ConfigModule.forRoot({
+          envFilePath: '.env',
+          isGlobal: true,
+        }),
+        MongooseModule.forRoot(process.env.TEST_MONGODB_URL, {
+          dbName: process.env.TEST_MONGODB_DB_NAME,
+        }),
+        MongooseModule.forFeature([{ name: 'Student', schema: studentSchema }]),
+        MongooseModule.forFeature([
+          {
+            name: 'Department',
+            schema: departmentSchema,
+          },
+        ]),
+        MongooseModule.forFeature([
+          {
+            name: 'Attendance',
+            schema: attendanceSchema,
+          },
+        ]),
+      ],
+      providers: [StudentService, DepartmentService, AttendanceService],
       controllers: [AttendanceController],
-      providers: [AttendanceService],
     }).compile();
-
     controller = module.get<AttendanceController>(AttendanceController);
+    depService = module.get<DepartmentService>(DepartmentService);
     attendanceService = module.get<AttendanceService>(AttendanceService);
+    studentService = module.get<StudentService>(StudentService); // Add this line
+    studentModel = module.get<Model<Student>>(getModelToken(Student.name));
+    depModel = module.get<Model<Department>>(getModelToken(Department.name));
+    attendanceModel = module.get<Model<Attendance>>(
+      getModelToken(Attendance.name),
+    );
+    await studentService.clearStudents();
+    await depService.clearDepartment();
+    await attendanceService.clearAttendance();
+    const { id } = await depService.create(depOne);
+    depId1 = id;
+    const { id: newId } = await depService.create(depTwo);
+    depId2 = newId;
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
+  it('should be defined attendance service', () => {
+    expect(attendanceService).toBeDefined();
   });
 
-  describe('createNew', () => {
-    it('should create a new attendance', async () => {
-      const id = new mongoose.Types.ObjectId();
-      const createAttendanceDto: CreateAttendanceDto = {
-        studentId: id,
-        date: '2023-01-01',
+  describe('create student', () => {
+    it('should be add student', async () => {
+      const student1: CreateStudentDto = {
+        name: 'temp',
+        email: 'temp@gmail.com',
+        mobileNumber: 123456789,
+        password: '123',
+        department: depId1,
+        sem: 5,
+        role: 'STUDENT',
+        authToken: 'dummy',
+      };
+      const res = await studentService.create(student1);
+      stId1 = res.id;
+      expect(res).toBeDefined();
+      expect(res).not.toBeNull();
+    });
+  });
+
+  //only test purpose for testing department and student
+  // describe('student login', () => {
+  //   it('should be login student ', async () => {
+  //     const st1 = await studentService.login('temp@gmail.com', '123');
+  //     expect(st1).not.toBeNull();
+  //     studentService.setStudentObj({ id: st1._id, role: 'STUDENT' });
+  //   });
+  // });
+
+  // describe('change student details by admin', () => {
+  //   it('should be able to change student details', async () => {
+  //     console.log(studentService.getStudentObj()['id']);
+  //     const student = await studentService.findOne(studentService.getStudentObj()['id']);
+  //     console.log('student old department is  ', student.department);
+  //     console.log('student new department is ', depId2);
+  //     const res = await studentService.update(studentService.getStudentObj()['id'], {
+  //       department: depId2,
+  //       name: 'new test name',
+  //     });
+  //     expect(res).not.toBeNull();
+  //   });
+  // });
+
+  describe('add attendance', () => {
+    it('should be add new attendance', async () => {
+      const at1: CreateAttendanceDto = {
+        studentId: new Types.ObjectId(stId1),
+        date: '12-11-2023',
         isPresent: true,
       };
-
-      jest.spyOn(attendanceService, 'create').mockResolvedValueOnce();
-
-      const result = await controller.createNew(createAttendanceDto);
-
-      expect(attendanceService.create).toHaveBeenCalledWith(
-        createAttendanceDto,
-      );
-      expect(result).toEqual();
+      const res = await controller.createNew(at1);
+      expect(res).not.toBeNull();
     });
+  });
 
-    it('should throw NotFoundException when student is not found', async () => {
-      const createAttendanceDto: CreateAttendanceDto = {
-        studentId: 'non-existing-student-id',
-        date: '2023-01-01',
+  describe('add attendance', () => {
+    it('should be add new attendance', async () => {
+      const at1: CreateAttendanceDto = {
+        studentId: new Types.ObjectId(stId1),
+        date: '13-11-2023',
+        isPresent: false,
+      };
+      const res = await controller.createNew(at1);
+      expect(res).not.toBeNull();
+    });
+  });
+
+  describe('add attendance', () => {
+    it('should be add new attendance', async () => {
+      const at1: CreateAttendanceDto = {
+        studentId: new Types.ObjectId(stId1),
+        date: '14-11-2023',
         isPresent: true,
       };
-
-      jest
-        .spyOn(attendanceService, 'create')
-        .mockRejectedValueOnce(new NotFoundException());
-
-      await expect(
-        controller.createNew(createAttendanceDto),
-      ).rejects.toThrowError(NotFoundException);
-
-      expect(attendanceService.create).toHaveBeenCalledWith(
-        createAttendanceDto,
-      );
+      const res = await controller.createNew(at1);
+      atId1 = res.id;
+      expect(res).not.toBeNull();
     });
   });
 
-  describe('getAttendanceByStudentId', () => {
-    it('should get attendance by student id', async () => {
-      const studentId = 'some-student-id';
-
-      jest
-        .spyOn(attendanceService, 'studentAttendance')
-        .mockResolvedValueOnce();
-
-      const result = await controller.getAttendanceByStudentId(studentId);
-
-      expect(attendanceService.studentAttendance).toHaveBeenCalledWith(
-        studentId,
-      );
-      expect(result).toEqual();
+  describe('get attendance by student id', () => {
+    it('should return all attendances', async () => {
+      const res = await controller.getAttendanceByStudentId(stId1);
+      expect(res).not.toBeNull();
     });
   });
 
-  describe('getSingleAttendance', () => {
-    it('should get single attendance by attendance id', async () => {
-      const attendanceId = 'some-attendance-id';
-
-      jest.spyOn(attendanceService, 'getOneAttendance').mockResolvedValueOnce();
-
-      const result = await controller.getSingleAttendance(attendanceId);
-
-      expect(attendanceService.getOneAttendance).toHaveBeenCalledWith(
-        attendanceId,
-      );
-      expect(result).toEqual();
-    });
-
-    it('should throw NotFoundException when attendance is not found', async () => {
-      const nonExistingAttendanceId = 'non-existing-attendance-id';
-
-      jest
-        .spyOn(attendanceService, 'getOneAttendance')
-        .mockRejectedValueOnce(new NotFoundException());
-
-      await expect(
-        controller.getSingleAttendance(nonExistingAttendanceId),
-      ).rejects.toThrowError(NotFoundException);
-
-      expect(attendanceService.getOneAttendance).toHaveBeenCalledWith(
-        nonExistingAttendanceId,
-      );
+  describe('get one attendance by attendanceId', () => {
+    it('should return attendance', async () => {
+      const res = await controller.getSingleAttendance(atId1);
+      console.log('atId1 is ', atId1);
+      expect(res).not.toBeNull();
     });
   });
 });

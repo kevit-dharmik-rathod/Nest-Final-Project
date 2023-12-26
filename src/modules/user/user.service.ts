@@ -31,9 +31,15 @@ export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: mongoose.Model<User>,
   ) {}
+
+  /**
+   *
+   * @param email of user
+   * @param password of user
+   * @returns user object
+   */
   async loginUser(email: string, password: string): Promise<User> {
     try {
-      console.log('current working directory is ', process.cwd());
       if (!email || !password) {
         throw new BadRequestException('Email or password is missing');
       }
@@ -46,23 +52,16 @@ export class UserService {
       if (storedHash !== hash.toString('hex')) {
         throw new BadRequestException('password is incorrect');
       }
-      const filePath = join(__dirname, '../../../keys/Private.key');
-      console.log(filePath);
+      // const filePath = join(__dirname, '../../../keys/Private.key');
       // if (!fs.existsSync(filePath)) {
       //   throw new Error(`File not found: ${filePath}`);
       // }
-      const fileData = fs.readFileSync(filePath, 'utf-8');
-      console.log(fileData);
+      // const fileData = fs.readFileSync(filePath, 'utf-8');
 
       // Display or process the file data
-      console.log('File Content:', fileData);
-      const privatekey = fs.readFileSync(
-        join(__dirname, '../../../keys/Private.key'),
-      );
       const token = jwt.sign(
         { id: user.id.toString(), role: user.role },
-        privatekey,
-        { algorithm: 'RS256' },
+        process.env.JWT_AUTH_SECRET,
       );
       user.authToken = token;
       await user.save();
@@ -73,6 +72,10 @@ export class UserService {
     }
   }
 
+  /**
+   *
+   * @returns logout message
+   */
   async logOut(): Promise<String> {
     try {
       //_id instead of id for time of controller testing
@@ -93,6 +96,11 @@ export class UserService {
     }
   }
 
+  /**
+   *
+   * @param user user dto with body
+   * @returns user object
+   */
   async create(user: CreateUserDto): Promise<User> {
     try {
       const newUser = await this.userModel.create(user);
@@ -108,6 +116,10 @@ export class UserService {
     }
   }
 
+  /**
+   *
+   * @returns users array
+   */
   async findAll(): Promise<User[]> {
     try {
       const result = await this.userModel.find({});
@@ -117,6 +129,10 @@ export class UserService {
     }
   }
 
+  /**
+   *
+   * @returns login user profile
+   */
   async whoAmI(): Promise<User> {
     try {
       //_id instead of id for time of controller testing
@@ -135,6 +151,11 @@ export class UserService {
     }
   }
 
+  /**
+   *
+   * @param id of user
+   * @returns user object
+   */
   async findOne(id: string) {
     const user = await this.userModel.findById(id);
     if (!user) {
@@ -143,6 +164,11 @@ export class UserService {
     return user;
   }
 
+  /**
+   *
+   * @param email of user
+   * @returns user find by it's email
+   */
   async findUserByEmail(email: string) {
     try {
       return await this.userModel.findOne({ email });
@@ -151,6 +177,11 @@ export class UserService {
     }
   }
 
+  /**
+   *
+   * @param updateUser body of properties which admin want to change
+   * @returns user object
+   */
   async updateOwnAdminProfile(
     updateUser: Partial<UpdateUserAdminDto>,
   ): Promise<User> {
@@ -178,6 +209,11 @@ export class UserService {
     }
   }
 
+  /**
+   *
+   * @param body of only password property
+   * @returns user object
+   */
   async updateOther(body: object): Promise<User> {
     try {
       const { id } = this.userObj as UserObject;
@@ -196,6 +232,11 @@ export class UserService {
     }
   }
 
+  /**
+   *
+   * @param id user id
+   * @returns delete acknowledgement
+   */
   async remove(id: string) {
     try {
       return await this.userModel.findByIdAndDelete(id);
@@ -204,6 +245,10 @@ export class UserService {
     }
   }
 
+  /**
+   *
+   * @returns delete all users and return delete acknowledgement
+   */
   async clearUser() {
     try {
       const result = await this.userModel.deleteMany({

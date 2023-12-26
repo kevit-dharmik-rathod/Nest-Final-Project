@@ -10,7 +10,7 @@ import { CreateStudentDto } from './dto/create-student.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import * as fs from 'fs';
 import { Student } from './Schemas/student.schema';
-import mongoose, { Types } from 'mongoose';
+import mongoose, { ObjectId, Types } from 'mongoose';
 import { scrypt as _scrypt, randomBytes } from 'crypto';
 import { promisify } from 'util';
 import { DepartmentService } from '../department/department.service';
@@ -38,6 +38,12 @@ export class StudentService {
     private attendanceService: AttendanceService,
   ) {}
 
+  /**
+   *
+   * @param email student's mail string
+   * @param password student's password string
+   * @returns student object
+   */
   async login(email: string, password: string) {
     try {
       const student = await this.studentModel.findOne({ email });
@@ -49,13 +55,12 @@ export class StudentService {
       if (storedHash !== hash.toString('hex')) {
         throw new BadRequestException('password is incorrect');
       }
-      const privatekey = fs.readFileSync(
-        join(__dirname, '../../../keys/Private.key'),
-      );
+      // const privatekey = fs.readFileSync(
+      //   join(__dirname, '../../../keys/Private.key'),
+      // );
       const token = jwt.sign(
         { id: student.id.toString(), role: student.role },
-        privatekey,
-        { algorithm: 'RS256' },
+        process.env.JWT_AUTH_SECRET,
       );
       student.authToken = token;
       await student.save();
@@ -65,6 +70,10 @@ export class StudentService {
     }
   }
 
+  /**
+   *
+   * @returns string of logout message
+   */
   async logout(): Promise<String> {
     try {
       const { id } = this.studentObj as StudentObject;
@@ -79,6 +88,12 @@ export class StudentService {
       throw error;
     }
   }
+
+  /**
+   *
+   * @param createStudentDto student body
+   * @returns student object
+   */
   async create(createStudentDto: CreateStudentDto) {
     try {
       const department = await this.deptService.findOne(
@@ -108,6 +123,10 @@ export class StudentService {
     }
   }
 
+  /**
+   *
+   * @returns students array
+   */
   async findAll() {
     try {
       return await this.studentModel.find({});
@@ -116,6 +135,10 @@ export class StudentService {
     }
   }
 
+  /**
+   *
+   * @returns student object
+   */
   async showMyProfile() {
     try {
       const { id } = this.studentObj as StudentObject;
@@ -125,6 +148,11 @@ export class StudentService {
     }
   }
 
+  /**
+   *
+   * @param body allowed fields to change
+   * @returns student object
+   */
   async updateMyPassword(body: object): Promise<String> {
     try {
       const { id } = this.studentObj as StudentObject;
@@ -140,7 +168,13 @@ export class StudentService {
       return 'Password updated successfully';
     } catch (error) {}
   }
-  async findOne(id: string) {
+
+  /**
+   *
+   * @param id student id
+   * @returns student object
+   */
+  async findOne(id: string | Types.ObjectId) {
     try {
       return await this.studentModel.findById(id);
     } catch (error) {
@@ -148,6 +182,12 @@ export class StudentService {
     }
   }
 
+  /**
+   *
+   * @param id student id
+   * @param body allowed fields to change
+   * @returns student object
+   */
   async update(
     id: string,
     body: Partial<UpdateStudentOtherFields>,
@@ -184,6 +224,12 @@ export class StudentService {
     }
     return 'department updated successfully';
   }
+
+  /**
+   *
+   * @param id student id
+   * @returns string of message
+   */
   async remove(id: string): Promise<String> {
     const student = await this.studentModel.findById(id);
     const { department: studentExistingDepartment } = student;
@@ -205,6 +251,9 @@ export class StudentService {
     return await this.studentModel.deleteMany({ department: newId });
   }
 
+  /**
+   * return acknowledgement of delete count
+   */
   async clearStudents() {
     try {
       await this.studentModel.deleteMany({});
