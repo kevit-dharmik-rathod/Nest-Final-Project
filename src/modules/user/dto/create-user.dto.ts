@@ -20,7 +20,4 @@ export class CreateUserDto {
 
   @IsString()
   role: string;
-
-  @IsString()
-  authToken: string;
 }

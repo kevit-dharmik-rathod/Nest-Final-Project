@@ -1,7 +1,6 @@
 import {
   MiddlewareConsumer,
   Module,
-  NestMiddleware,
   NestModule,
   RequestMethod,
 } from '@nestjs/common';
@@ -27,8 +26,11 @@ import { AttendanceController } from './modules/attendance/attendance.controller
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => {
+      useFactory: async (configService: ConfigService) => {
         return {
+          // uri: process.env.NEST_ENV === 'test'
+          //   ? configService.get('TEST_MONGODB_URL')
+          //   : configService.get('MONGODB_URL'),
           uri: configService.get('MONGODB_URL'),
         };
       },
@@ -49,6 +51,8 @@ export class AppModule implements NestModule {
       .apply(UserAuthenticationMiddleware)
       .exclude(
         { path: '/user/login', method: RequestMethod.POST },
+        //for test purpose only
+        { path: '/user/add', method: RequestMethod.POST },
         { path: '/student/login', method: RequestMethod.POST },
       )
       .forRoutes(

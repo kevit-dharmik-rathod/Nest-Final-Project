@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  HttpCode,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -16,11 +17,18 @@ import { UseGuards } from '@nestjs/common';
 import { RolesGuard } from '../../guards/roles.guard';
 import { Roles } from './decorators/user.decorator';
 import { UpdateOtherUserDto } from './dto/update-otheruser.dto';
+import { User } from './Schemas/user.schema';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  /**
+   *
+   * @param credentials email and password of user
+   * @returns user
+   */
   @Post('/login')
+  @HttpCode(200)
   async userLogin(@Body() credentials: LoginUserDto) {
     const user = await this.userService.loginUser(
       credentials.email,
@@ -29,13 +37,22 @@ export class UserController {
     return user;
   }
 
+  /**
+   *
+   * @param body user body with properties
+   * @returns user object
+   */
   @Post('/add')
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
-  async create(@Body() body: CreateUserDto) {
+  // @UseGuards(RolesGuard)
+  // @Roles('ADMIN')
+  async create(@Body() body: CreateUserDto): Promise<User> {
     return await this.userService.create(body);
   }
 
+  /**
+   *
+   * @returns all users array
+   */
   @Get('/getAll')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
@@ -43,39 +60,54 @@ export class UserController {
     return await this.userService.findAll();
   }
 
+  /**
+   *
+   * @returns string message of logout
+   */
   @Post('/logout')
+  @HttpCode(200)
   async userLogout() {
     return await this.userService.logOut();
   }
 
-  @Get()
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
-  findAll() {
-    return this.userService.findAll();
-  }
-
+  /**
+   *
+   * @returns user object
+   */
   @Get('/whoami')
   getMyProfile() {
     return this.userService.whoAmI();
   }
+
+  /**
+   *
+   * @param body update own profile
+   * @returns user object
+   */
   @Patch('/updateOwn')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
-  async updateOwn(@Body() body: UpdateUserAdminDto) {
+  async updateOwn(@Body() body: Partial<UpdateUserAdminDto>) {
     return await this.userService.updateOwnAdminProfile(body);
   }
 
-  @Patch('/updateOthers/:id')
+  /**
+   *
+   * @param body update other user their profile only change password body of only password
+   * @returns user object
+   */
+  @Patch('/updateStaffItsProfile')
   @UseGuards(RolesGuard)
-  @Roles('ADMIN')
-  async updateOthers(
-    @Param('id') id: string,
-    @Body() body: UpdateOtherUserDto,
-  ) {
-    return await this.userService.updateOther(id, body);
+  @Roles('STAFF')
+  async updateOthers(@Body() body: UpdateOtherUserDto) {
+    return await this.userService.updateOther(body);
   }
 
+  /**
+   *
+   * @param id user id
+   * @returns user object
+   */
   @Get('/:id')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
@@ -83,6 +115,11 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
+  /**
+   *
+   * @param id user id
+   * @returns user object
+   */
   @Delete('/delete/:id')
   remove(@Param('id') id: string) {
     return this.userService.remove(id);

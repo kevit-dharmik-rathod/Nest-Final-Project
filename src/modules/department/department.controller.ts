@@ -47,6 +47,11 @@ export class DepartmentController {
     return await this.departmentService.task4(body);
   }
 
+  /**
+   *
+   * @param createDepartmentDto of department body
+   * @returns department object
+   */
   @Post('/add')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
@@ -54,6 +59,10 @@ export class DepartmentController {
     return this.departmentService.create(createDepartmentDto);
   }
 
+  /**
+   *
+   * @returns department array
+   */
   @Get('/getall')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
@@ -61,6 +70,11 @@ export class DepartmentController {
     return this.departmentService.findAll();
   }
 
+  /**
+   *
+   * @param id of department
+   * @returns department object
+   */
   @Get('/:id')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
@@ -68,6 +82,12 @@ export class DepartmentController {
     return this.departmentService.findOne(id);
   }
 
+  /**
+   *
+   * @param id of department
+   * @param body of department
+   * @returns department object
+   */
   @Patch('/update/:id')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
@@ -75,6 +95,11 @@ export class DepartmentController {
     return this.departmentService.update(id, body);
   }
 
+  /**
+   *
+   * @param id of department
+   * @returns delete message of string
+   */
   @Delete('/delete/:id')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')

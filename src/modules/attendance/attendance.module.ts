@@ -4,7 +4,7 @@ import { AttendanceService } from './attendance.service';
 import { StudentModule } from '../student/student.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Attendance, attendanceSchema } from './Schemas/attendance.schema';
-import { RolesGuard } from 'src/guards/roles.guard';
+import { RolesGuard } from '../../guards/roles.guard';
 import { UserModule } from '../user/user.module';
 
 @Module({
