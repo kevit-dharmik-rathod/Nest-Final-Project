@@ -10,12 +10,12 @@ import { CreateStudentDto } from './dto/create-student.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import * as fs from 'fs';
 import { Student } from './Schemas/student.schema';
-import mongoose, { Types } from 'mongoose';
+import mongoose, { ObjectId, Types } from 'mongoose';
 import { scrypt as _scrypt, randomBytes } from 'crypto';
 import { promisify } from 'util';
 import { DepartmentService } from '../department/department.service';
 import { join } from 'path';
-import { StudentObject } from 'src/interfaces/student-secret.interface';
+import { StudentObject } from '../../interfaces/student-secret.interface';
 import { UpdateStudentOtherFields } from './dto/update-student-fields.dto';
 import { AttendanceService } from '../attendance/attendance.service';
 const jwt = require('jsonwebtoken');
@@ -38,6 +38,12 @@ export class StudentService {
     private attendanceService: AttendanceService,
   ) {}
 
+  /**
+   *
+   * @param email student's mail string
+   * @param password student's password string
+   * @returns student object
+   */
   async login(email: string, password: string) {
     try {
       const student = await this.studentModel.findOne({ email });
@@ -49,13 +55,12 @@ export class StudentService {
       if (storedHash !== hash.toString('hex')) {
         throw new BadRequestException('password is incorrect');
       }
-      const privatekey = fs.readFileSync(
-        join(__dirname, '../../../keys/Private.key'),
-      );
+      // const privatekey = fs.readFileSync(
+      //   join(__dirname, '../../../keys/Private.key'),
+      // );
       const token = jwt.sign(
         { id: student.id.toString(), role: student.role },
-        privatekey,
-        { algorithm: 'RS256' },
+        process.env.JWT_AUTH_SECRET,
       );
       student.authToken = token;
       await student.save();
@@ -65,6 +70,10 @@ export class StudentService {
     }
   }
 
+  /**
+   *
+   * @returns string of logout message
+   */
   async logout(): Promise<String> {
     try {
       const { id } = this.studentObj as StudentObject;
@@ -79,6 +88,12 @@ export class StudentService {
       throw error;
     }
   }
+
+  /**
+   *
+   * @param createStudentDto student body
+   * @returns student object
+   */
   async create(createStudentDto: CreateStudentDto) {
     try {
       const department = await this.deptService.findOne(
@@ -90,12 +105,12 @@ export class StudentService {
       if (department.occupiedSeats === department.availableSeats) {
         throw new BadRequestException('NO vacancy available');
       }
-      department.occupiedSeats += 1;
-      await department.save();
       createStudentDto.department = new Types.ObjectId(
         createStudentDto.department,
       );
       const newStudent = await this.studentModel.create(createStudentDto);
+      department.occupiedSeats += 1;
+      await department.save();
       const tempPassword = newStudent.password;
       const salt = randomBytes(8).toString('hex');
       const hash = (await scrypt(tempPassword, salt, 32)) as Buffer;
@@ -108,6 +123,10 @@ export class StudentService {
     }
   }
 
+  /**
+   *
+   * @returns students array
+   */
   async findAll() {
     try {
       return await this.studentModel.find({});
@@ -116,6 +135,10 @@ export class StudentService {
     }
   }
 
+  /**
+   *
+   * @returns student object
+   */
   async showMyProfile() {
     try {
       const { id } = this.studentObj as StudentObject;
@@ -125,6 +148,11 @@ export class StudentService {
     }
   }
 
+  /**
+   *
+   * @param body allowed fields to change
+   * @returns student object
+   */
   async updateMyPassword(body: object): Promise<String> {
     try {
       const { id } = this.studentObj as StudentObject;
@@ -140,7 +168,13 @@ export class StudentService {
       return 'Password updated successfully';
     } catch (error) {}
   }
-  async findOne(id: string) {
+
+  /**
+   *
+   * @param id student id
+   * @returns student object
+   */
+  async findOne(id: string | Types.ObjectId) {
     try {
       return await this.studentModel.findById(id);
     } catch (error) {
@@ -148,7 +182,16 @@ export class StudentService {
     }
   }
 
-  async update(id: string, body: UpdateStudentOtherFields): Promise<String> {
+  /**
+   *
+   * @param id student id
+   * @param body allowed fields to change
+   * @returns student object
+   */
+  async update(
+    id: string,
+    body: Partial<UpdateStudentOtherFields>,
+  ): Promise<String> {
     const student = await this.studentModel.findById(id);
     const { department: studentExistingDepartment } = student;
     const { department: studentNewDepartment } = body;
@@ -159,7 +202,7 @@ export class StudentService {
     if (!student) {
       throw new NotFoundException('Student does not exist');
     }
-    Object.assign(student, body.name, body.email, body.mobileNumber, body.sem);
+
     const exist_dep = await this.deptService.findOne(
       studentExistingDepartment.toString(),
     );
@@ -171,13 +214,22 @@ export class StudentService {
         await exist_dep.save();
         newDepartment.occupiedSeats += 1;
         await newDepartment.save();
-        Object.assign(student, newDepartment);
+        student.name = body.name || student.name;
+        student.email = body.email || student.email;
+        student.mobileNumber = body.mobileNumber || student.mobileNumber;
+        student.sem = body.sem || student.sem;
+        student.department = new Types.ObjectId(body.department);
         await student.save();
       }
     }
-
     return 'department updated successfully';
   }
+
+  /**
+   *
+   * @param id student id
+   * @returns string of message
+   */
   async remove(id: string): Promise<String> {
     const student = await this.studentModel.findById(id);
     const { department: studentExistingDepartment } = student;
@@ -194,9 +246,17 @@ export class StudentService {
     const newId = new Types.ObjectId(deptId);
     const allStudents = await this.studentModel.find({ department: newId });
     for (const student of allStudents) {
-      console.log(student._id);
       await this.attendanceService.deleteManyAttendance(student._id.toString());
     }
     return await this.studentModel.deleteMany({ department: newId });
+  }
+
+  /**
+   * return acknowledgement of delete count
+   */
+  async clearStudents() {
+    try {
+      await this.studentModel.deleteMany({});
+    } catch (error) {}
   }
 }

@@ -3,7 +3,6 @@ import {
   Logger,
   NotFoundException,
   BadRequestException,
-  Scope,
 } from '@nestjs/common';
 import {} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -32,7 +31,14 @@ export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: mongoose.Model<User>,
   ) {}
-  async loginUser(email: string, password: string) {
+
+  /**
+   *
+   * @param email of user
+   * @param password of user
+   * @returns user object
+   */
+  async loginUser(email: string, password: string): Promise<User> {
     try {
       if (!email || !password) {
         throw new BadRequestException('Email or password is missing');
@@ -46,24 +52,37 @@ export class UserService {
       if (storedHash !== hash.toString('hex')) {
         throw new BadRequestException('password is incorrect');
       }
-      const privatekey = fs.readFileSync(
-        join(__dirname, '../../../keys/Private.key'),
-      );
+      // const filePath = join(__dirname, '../../../keys/Private.key');
+      // if (!fs.existsSync(filePath)) {
+      //   throw new Error(`File not found: ${filePath}`);
+      // }
+      // const fileData = fs.readFileSync(filePath, 'utf-8');
+
+      // Display or process the file data
       const token = jwt.sign(
         { id: user.id.toString(), role: user.role },
-        privatekey,
-        { algorithm: 'RS256' },
+        process.env.JWT_AUTH_SECRET,
       );
       user.authToken = token;
       await user.save();
       return user;
     } catch (err) {
+      this.logger.error(`error in login: ${err}`);
       throw err;
     }
   }
 
+  /**
+   *
+   * @returns logout message
+   */
   async logOut(): Promise<String> {
     try {
+      //_id instead of id for time of controller testing
+      // const { _id } = this.userObj as UserObject;
+      // const user = await this.userModel.findById(_id);
+
+      //for testing purpose
       const { id } = this.userObj as UserObject;
       const user = await this.userModel.findById(id);
       if (!user) {
@@ -77,7 +96,12 @@ export class UserService {
     }
   }
 
-  async create(user: CreateUserDto) {
+  /**
+   *
+   * @param user user dto with body
+   * @returns user object
+   */
+  async create(user: CreateUserDto): Promise<User> {
     try {
       const newUser = await this.userModel.create(user);
       const tempPassword = newUser.password;
@@ -92,16 +116,30 @@ export class UserService {
     }
   }
 
+  /**
+   *
+   * @returns users array
+   */
   async findAll(): Promise<User[]> {
     try {
-      return await this.userModel.find({});
+      const result = await this.userModel.find({});
+      return result;
     } catch (err) {
       throw err;
     }
   }
 
+  /**
+   *
+   * @returns login user profile
+   */
   async whoAmI(): Promise<User> {
     try {
+      //_id instead of id for time of controller testing
+      // const { _id } = this.userObj as UserObject;
+      // const user = await this.userModel.findById(_id);
+
+      //for testing purpose
       const { id } = this.userObj as UserObject;
       const user = await this.userModel.findById(id);
       if (!user) {
@@ -113,6 +151,11 @@ export class UserService {
     }
   }
 
+  /**
+   *
+   * @param id of user
+   * @returns user object
+   */
   async findOne(id: string) {
     const user = await this.userModel.findById(id);
     if (!user) {
@@ -121,6 +164,11 @@ export class UserService {
     return user;
   }
 
+  /**
+   *
+   * @param email of user
+   * @returns user find by it's email
+   */
   async findUserByEmail(email: string) {
     try {
       return await this.userModel.findOne({ email });
@@ -129,8 +177,19 @@ export class UserService {
     }
   }
 
-  async updateOwnAdminProfile(updateUser: UpdateUserAdminDto) {
+  /**
+   *
+   * @param updateUser body of properties which admin want to change
+   * @returns user object
+   */
+  async updateOwnAdminProfile(
+    updateUser: Partial<UpdateUserAdminDto>,
+  ): Promise<User> {
     try {
+      //_id instead of id for time of controller testing
+      // const { _id } = this.userObj as UserObject;
+      // const user = await this.userModel.findById(_id);
+
       const { id } = this.userObj as UserObject;
       const user = await this.userModel.findById(id);
       if (!user) {
@@ -150,11 +209,17 @@ export class UserService {
     }
   }
 
-  async updateOther(id: string, body: object): Promise<User> {
+  /**
+   *
+   * @param body of only password property
+   * @returns user object
+   */
+  async updateOther(body: object): Promise<User> {
     try {
+      const { id } = this.userObj as UserObject;
       const user = await this.userModel.findById(id);
       if (!user) {
-        throw new BadRequestException('User not found');
+        throw new NotFoundException('User not found');
       }
       const salt = randomBytes(8).toString('hex');
       const hash = (await scrypt(body['password'], salt, 32)) as Buffer;
@@ -167,9 +232,29 @@ export class UserService {
     }
   }
 
-  remove(id: string) {
+  /**
+   *
+   * @param id user id
+   * @returns delete acknowledgement
+   */
+  async remove(id: string) {
     try {
-      return this.userModel.findByIdAndDelete(id);
+      return await this.userModel.findByIdAndDelete(id);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   *
+   * @returns delete all users and return delete acknowledgement
+   */
+  async clearUser() {
+    try {
+      const result = await this.userModel.deleteMany({
+        role: { $ne: 'ADMIN' },
+      });
+      return result;
     } catch (err) {
       throw err;
     }

@@ -1,4 +1,4 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { Types } from 'mongoose';
 
 export class CreateStudentDto {
@@ -8,6 +8,7 @@ export class CreateStudentDto {
   @IsString()
   email: string;
 
+  @IsOptional()
   @IsString()
   role: string;
 
@@ -21,8 +22,9 @@ export class CreateStudentDto {
   department: Types.ObjectId;
 
   @IsString()
-  sem: string;
+  sem: number;
 
+  @IsOptional()
   @IsString()
   authToken: string;
 }

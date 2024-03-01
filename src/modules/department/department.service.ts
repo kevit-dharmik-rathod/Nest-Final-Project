@@ -8,7 +8,7 @@ import {
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { Department } from './Schemas/dept.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
+import mongoose, { ObjectId } from 'mongoose';
 import { StudentService } from '../student/student.service';
 @Injectable()
 export class DepartmentService {
@@ -18,6 +18,12 @@ export class DepartmentService {
     @Inject(forwardRef(() => StudentService))
     private studentService: StudentService,
   ) {}
+
+  /**
+   *
+   * @param createDepartmentDto of department body
+   * @returns department object
+   */
   async create(createDepartmentDto: CreateDepartmentDto) {
     try {
       return await this.deptModel.create(createDepartmentDto);
@@ -26,6 +32,10 @@ export class DepartmentService {
     }
   }
 
+  /**
+   *
+   * @returns department array
+   */
   async findAll() {
     try {
       return await this.deptModel.find({});
@@ -34,14 +44,26 @@ export class DepartmentService {
     }
   }
 
-  async findOne(id: string) {
+  /**
+   *
+   * @param id of department
+   * @returns department object
+   */
+  async findOne(id: string | ObjectId) {
     try {
-      return await this.deptModel.findById(id);
+      const result = await this.deptModel.findById(id);
+      return result;
     } catch (error) {
       throw error;
     }
   }
 
+  /**
+   *
+   * @param id of department
+   * @param body of department
+   * @returns department object
+   */
   async update(id: string, attrs: Partial<Department>) {
     try {
       const department = await this.deptModel.findById(id);
@@ -54,6 +76,11 @@ export class DepartmentService {
     } catch (error) {}
   }
 
+  /**
+   *
+   * @param id of department
+   * @returns delete message of string
+   */
   async remove(id: string): Promise<String> {
     try {
       await this.studentService.deleteStudents(id);
@@ -64,6 +91,18 @@ export class DepartmentService {
     }
   }
 
+  /**
+   * clear department collection
+   * @returns delete acknowledgement
+   */
+  async clearDepartment(): Promise<String> {
+    try {
+      await this.deptModel.deleteMany({});
+      return 'Department deleted successfully';
+    } catch (error) {
+      throw error;
+    }
+  }
   async task1() {
     try {
       const pipeLine: any = [

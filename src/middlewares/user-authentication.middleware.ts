@@ -9,7 +9,7 @@ import { Request, Response, NextFunction } from 'express';
 import { UserService } from '../modules/user/user.service';
 import * as fs from 'fs';
 import { join } from 'path';
-import { StudentService } from 'src/modules/student/student.service';
+import { StudentService } from '../modules/student/student.service';
 const jwt = require('jsonwebtoken');
 @Injectable()
 export class UserAuthenticationMiddleware implements NestMiddleware {
@@ -26,10 +26,10 @@ export class UserAuthenticationMiddleware implements NestMiddleware {
         throw new ForbiddenException('Please Authenticate');
       }
       const token = req.header('Authorization').replace('Bearer ', '');
-      const privatekey = fs.readFileSync(
-        join(__dirname, '../../keys/Private.key'),
-      );
-      const { id, role } = jwt.verify(token, privatekey);
+      // const privatekey = fs.readFileSync(
+      //   join(__dirname, '../../keys/Private.key'),
+      // );
+      const { id, role } = jwt.verify(token, process.env.JWT_AUTH_SECRET);
       const person =
         role === 'STUDENT'
           ? await this.studentService.findOne(id)

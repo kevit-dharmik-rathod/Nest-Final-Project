@@ -20,41 +20,83 @@ export class AttendanceService {
     @Inject(forwardRef(() => StudentService))
     private studentService: StudentService,
   ) {}
+
+  /**
+   *
+   * @param body attendance body
+   * @returns attendance object
+   */
   async create(body: CreateAttendanceDto) {
     try {
-      const student = await this.studentService.findOne(
-        body.studentId.toString(),
-      );
+      console.log('attendance body is', body);
+      const student = await this.studentService.findOne(body.studentId);
       if (!student) {
         throw new NotFoundException('Student not found with given studentId');
       }
       body.studentId = new Types.ObjectId(body.studentId);
-      console.log(body.studentId);
       return await this.attendanceModel.create(body);
     } catch (error) {
       throw error;
     }
   }
 
+  //get attendances of student by it's id
+  /**
+   * get all attendance of given student
+   * @param studentId of student
+   * @returns attendance object
+   */
   async studentAttendance(studentId: string) {
     try {
-      return await this.attendanceModel.find({ studentId });
+      console.log('student id is ', studentId);
+      const res = await this.attendanceModel.find({
+        studentId: new Types.ObjectId(studentId),
+      });
+      console.log(res);
+      return res;
     } catch (error) {
       throw error;
     }
   }
 
+  //Get single attendance by attendance id
+  /**
+   *
+   * @param id of attendance
+   * @returns attendance object
+   */
   async getOneAttendance(id: string) {
     try {
       return await this.attendanceModel.findById(id);
-    } catch (error) {}
+    } catch (error) {
+      throw error;
+    }
   }
 
+  /**
+   * delete all attendance with given student id
+   * @param studentId
+   * @returns delete acknowledgement
+   */
   async deleteManyAttendance(studentId: string) {
     try {
-      console.log(`studentId in deleteManyAttendance ${studentId}`);
       const newId = new Types.ObjectId(studentId);
       return await this.attendanceModel.deleteMany({ studentId: newId });
-    } catch (error) {}
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * clear attendance database
+   * @returns delete acknowledgement
+   */
+  async clearAttendance() {
+    try {
+      const res = await this.attendanceModel.deleteMany({});
+      return res;
+    } catch (error) {
+      throw error;
+    }
   }
 }
