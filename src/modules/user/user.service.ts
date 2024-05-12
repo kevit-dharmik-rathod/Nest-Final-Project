@@ -11,8 +11,6 @@ import { User } from './Schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { scrypt as _scrypt, randomBytes } from 'crypto';
 import { promisify } from 'util';
-import * as fs from 'fs';
-import { join } from 'path';
 import { UserObject } from '../../interfaces/user-secret.interface';
 import { UpdateUserAdminDto } from './dto/update-useradmin.dto';
 const jwt = require('jsonwebtoken');

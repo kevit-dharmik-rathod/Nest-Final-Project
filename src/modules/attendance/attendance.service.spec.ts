@@ -10,11 +10,8 @@ import {
   Department,
   departmentSchema,
 } from '../department/Schemas/dept.schema';
-import {
-  Attendance,
-  attendanceSchema,
-} from '../attendance/Schemas/attendance.schema';
-import { AttendanceService } from '../attendance/attendance.service';
+import { Attendance, attendanceSchema } from './Schemas/attendance.schema';
+import { AttendanceService } from './attendance.service';
 import { depOne, depTwo } from '../../../testStubs/testing.stubs';
 import { CreateStudentDto } from '../student/dto/create-student.dto';
 import { CreateAttendanceDto } from './dtos/create-attendance.dto';
@@ -165,7 +162,6 @@ describe('StudentService', () => {
   describe('get attendance by student id', () => {
     it('should return all attendances', async () => {
       const res = await attendanceService.studentAttendance(stId1);
-      console.log('get attendanceby student id', res);
       expect(res).not.toBeNull();
     });
   });
@@ -173,7 +169,6 @@ describe('StudentService', () => {
   describe('get one attendance by attendanceId', () => {
     it('should return attendance', async () => {
       const res = await attendanceService.getOneAttendance(atId1);
-      console.log('atId1 is ', atId1);
       expect(res).not.toBeNull();
     });
   });
@@ -181,7 +176,6 @@ describe('StudentService', () => {
   describe('delete attendance by student id', () => {
     it('should delete attendance by student id', async () => {
       const res = await attendanceService.deleteManyAttendance(stId1);
-      console.log('delete attendance is ', res);
       expect(res).not.toBeNull();
     });
   });

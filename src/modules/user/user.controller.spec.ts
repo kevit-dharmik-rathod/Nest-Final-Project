@@ -1,11 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { UpdateOtherUserDto } from './dto/update-otheruser.dto';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { User, userSchema } from './Schemas/user.schema';
-import { Admin, staffOne, staffTwo } from '../../../testStubs/testing.stubs';
+import { staffOne, staffTwo } from '../../../testStubs/testing.stubs';
 import { LoginUserDto } from './dto/login-user.dto';
 import { Model } from 'mongoose';
 
