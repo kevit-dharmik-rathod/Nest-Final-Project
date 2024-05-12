@@ -6,7 +6,6 @@ import {
   Patch,
   Param,
   Delete,
-  Query,
   HttpCode,
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -43,8 +42,8 @@ export class UserController {
    * @returns user object
    */
   @Post('/add')
-  // @UseGuards(RolesGuard)
-  // @Roles('ADMIN')
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
   async create(@Body() body: CreateUserDto): Promise<User> {
     return await this.userService.create(body);
   }

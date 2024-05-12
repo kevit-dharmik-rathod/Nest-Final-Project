@@ -5,11 +5,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { attendanceSchema } from '../attendance/Schemas/attendance.schema';
-import {
-  Department,
-  departmentSchema,
-} from '../department/Schemas/dept.schema';
-import { DepartmentService } from '../department/department.service';
+import { Department, departmentSchema } from './Schemas/dept.schema';
+import { DepartmentService } from './department.service';
 import { AttendanceService } from '../attendance/attendance.service';
 import { depOne } from '../../../testStubs/testing.stubs';
 import { DepartmentController } from './department.controller';

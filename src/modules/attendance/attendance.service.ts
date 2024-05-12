@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Attendance } from './Schemas/attendance.schema';
-import mongoose, { ObjectId, Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { StudentService } from '../student/student.service';
 import { CreateAttendanceDto } from './dtos/create-attendance.dto';
 
